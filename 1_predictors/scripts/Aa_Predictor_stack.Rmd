@@ -18,8 +18,8 @@ p_load(here,
 ## Create directories
 
 ```{r create_dirs}
-#dir.create(here("1_predictors", "data", "input"), recursive = TRUE)
-#dir.create(here("1_predictors", "data", "output"), recursive = TRUE)
+dir.create(here("1_predictors", "data", "input"), recursive = TRUE)
+dir.create(here("1_predictors", "data", "output"), recursive = TRUE)
 ```
 
 
