@@ -1,0 +1,154 @@
+---
+title: "Creating a raster stack of predictor layers"
+output: html_notebook
+---
+
+# Preparations
+
+## Install packages
+
+```{r packages, message=FALSE, warning=FALSE}
+if(!require("pacman")) install.packages("pacman"); library(pacman)
+p_load(here, 
+       terra
+       )
+```
+
+
+## Create directories
+
+```{r create_dirs}
+#dir.create(here("1_predictors", "data", "input"), recursive = TRUE)
+#dir.create(here("1_predictors", "data", "output"), recursive = TRUE)
+```
+
+
+# Data processing
+
+## Create template rasters
+Create two template raster files with resolutions of 0.05 deg. x 0.05 deg. (template_raster_low) and 0.025 deg. x 0.025 deg. (template_raster_high).
+
+nrows = (ymax - ymin)/resolution
+ncols = (xmax - xmin)/resolution
+
+```{r templates}
+template_raster_low <- rast(nrows = 280, ncols = 264, xmin = -9.8, xmax = 3.4, ymin = 48.2, ymax = 62.2, crs = "EPSG:4326", vals = 1)
+plot(template_raster_low)
+```
+
+
+## Load predictor layers
+
+*Ultimately, the predictor layers should be stored at Zenodo, downloaded and unzipped before loading them into the project.*
+*It might also be neater to load the predictor files in a loop.*
+*The individual layers would also require more meaningful names.*
+
+bathymetry        Emodnet_bathymetry_2024_0.01deg
+mud               bias_adjusted_mud
+sand              bias_adjusted_sand
+gravel            bias_adjusted_gravel
+curr_vel_max      max_velocity_original_coarse
+curr_vel_mean     mean_velocity_original_coarse
+temp              bottom_temp_original
+sal               bias_corrected_downscaled_salinity
+chl               bias_corrected_downscaled_chl
+spm_summer        summer_SPM_original
+spm_winter        winter_bias_corrected_downscaled_spm
+
+```{r load_predictors}
+temp <- rast(here("1_predictors", "data", "input", "bottom_temp_original.tif"))
+chl <- rast(here("1_predictors", "data", "input", "bias_corrected_downscaled_chl.tif"))
+mud <- rast(here("1_predictors", "data", "input", "bias_adjusted_mud.tif"))
+gravel <- rast(here("1_predictors", "data", "input", "bias_adjusted_gravel.tif"))
+names(temp) <- "temp"
+names(chl) <- "chl"
+```
+
+
+## Create additive log-ratios of sediment composition data
+
+Mud, sand, and gravel content are compositional data that must sum to 100% (or 1 as fractional data). Projecting these data individually will lead to results that do not adhere to this. A workaround is to calculate additive log-ratios, project these and the calculate mud, sand, and gravel content from the projected additive log-ratios.
+
+```{r create_alr}
+alr_m <- log(mud/gravel)
+alr_s <- log(sand/gravel)
+```
+
+
+## Project predictor layers
+
+*Maybe this could also be looped.*
+
+method	
+character. Method used for estimating the new cell values of a SpatRaster. One of:
+
+near: nearest neighbor. This method is fast, and it can be the preferred method if the cell values represent classes. It is not a good choice for continuous values. This is used by default if the first layer of x is categorical.
+bilinear: bilinear interpolation. This is the default if the first layer of x is numeric (not categorical).
+cubic: cubic interpolation.
+cubicspline: cubic spline interpolation.
+lanczos: Lanczos windowed sinc resampling.
+sum: the weighted sum of all non-NA contributing grid cells.
+
+```{r project_predictors}
+temp_pr <- project(x = temp, y = template_raster_low)
+chl_pr <- project(x = chl, y = template_raster_low)
+```
+
+
+## Back-transform additive log-ratios
+
+mud = exp(alr_m)/(exp(alr_m) + exp(alr_s) + 1)
+sand = exp(alr_s)/(exp(alr_m) + exp(alr_s) + 1)
+gravel = 1 - (mud + sand)
+
+```{r back-transform}
+
+```
+
+
+
+## Create a raster stack
+
+```{r raster_stack}
+env_vars <- c(temp_pr, chl_pr)
+plot(env_vars)
+```
+
+## Load area of interest
+
+```{r load_aoi}
+aoi <- vect(here("1_predictors", "data", "input", "UK_shelf.shp"))
+
+```
+
+
+## Crop raster stack to UK shelf extent
+
+touches = TRUE?
+
+```{r crop_env_vars}
+env_vars <- crop(x = env_vars, y = aoi, mask = TRUE)
+plot(env_vars)
+```
+
+
+## Blank out areas mapped as bedrock
+
+The predictive seabed sediments map from the BGS includes bedrock at the seabed surface. Such areas should be blanked out in the raster stack.
+
+```{r bedrock}
+#sbs <- vect(here("1_predictors", "data", "input", "Predictive_SBS_UK_V1_ESRI", "Classified_Seabed_Sediments_Folk_UK_v1.shp"))
+#rock <- subset(sbs, sbs$Folk_Class == "Rock")
+
+
+```
+
+
+# Save raster stack
+
+```{r save_raster_stack}
+writeRaster(x = env_vars, filename = here("1_predictors", "data", "output", "env_vars.tif"), overwrite = TRUE)
+```
+
+
+
