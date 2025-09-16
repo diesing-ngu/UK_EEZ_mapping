@@ -56,12 +56,28 @@ spm_summer        summer_SPM_original
 spm_winter        winter_bias_corrected_downscaled_spm
 
 ```{r load_predictors}
-temp <- rast(here("1_predictors", "data", "input", "bottom_temp_original.tif"))
-chl <- rast(here("1_predictors", "data", "input", "bias_corrected_downscaled_chl.tif"))
-mud <- rast(here("1_predictors", "data", "input", "bias_adjusted_mud.tif"))
-gravel <- rast(here("1_predictors", "data", "input", "bias_adjusted_gravel.tif"))
-names(temp) <- "temp"
-names(chl) <- "chl"
+
+# List all .tif files in the input folder
+tif_files <- list.files("1_predictors/data/input", pattern = "\\.tif$", full.names = TRUE)
+
+# Import each .tif file and assign it to a variable named after the file
+for (file in tif_files) {
+  var_name <- tools::file_path_sans_ext(basename(file))
+  assign(var_name, rast(file))
+}
+
+#names
+
+mud <- bias_adjusted_mud
+sand <- bias_adjusted_sand
+gravel  <- bias_adjusted_gravel
+curr_vel_max  <- max_velocity_original_coarse
+curr_vel_mean <- mean_velocity_original_coarse
+temp    <- bottom_temp_original
+sal  <- bias_corrected_downscaled_salinity
+chl  <- bias_corrected_downscaled_chl
+spm_summer  <- summer_SPM_original
+spm_winter  <- winter_bias_corrected_downscaled_spm
 ```
 
 
@@ -90,8 +106,16 @@ lanczos: Lanczos windowed sinc resampling.
 sum: the weighted sum of all non-NA contributing grid cells.
 
 ```{r project_predictors}
-temp_pr <- project(x = temp, y = template_raster_low)
-chl_pr <- project(x = chl, y = template_raster_low)
+mud_pr         <- project(x = mud, y = template_raster_low)
+sand_pr        <- project(x = sand, y = template_raster_low)
+gravel_pr      <- project(x = gravel, y = template_raster_low)
+curr_vel_max_pr  <- project(x = curr_vel_max, y = template_raster_low)
+curr_vel_mean_pr <- project(x = curr_vel_mean, y = template_raster_low)
+temp_pr        <- project(x = temp, y = template_raster_low)
+sal_pr         <- project(x = sal, y = template_raster_low)
+chl_pr         <- project(x = chl, y = template_raster_low)
+spm_summer_pr  <- project(x = spm_summer, y = template_raster_low)
+spm_winter_pr  <- project(x = spm_winter, y = template_raster_low)
 ```
 
 
@@ -102,7 +126,9 @@ sand = exp(alr_s)/(exp(alr_m) + exp(alr_s) + 1)
 gravel = 1 - (mud + sand)
 
 ```{r back-transform}
-
+mud_1 = exp(alr_m)/(exp(alr_m) + exp(alr_s) + 1)
+sand_1 = exp(alr_s)/(exp(alr_m) + exp(alr_s) + 1)
+gravel_1 = 1 - (mud + sand)
 ```
 
 
@@ -110,7 +136,18 @@ gravel = 1 - (mud + sand)
 ## Create a raster stack
 
 ```{r raster_stack}
-env_vars <- c(temp_pr, chl_pr)
+env_vars <- c(
+  mud_pr,
+  sand_pr,
+  gravel_pr,
+  curr_vel_max_pr,
+  curr_vel_mean_pr,
+  temp_pr,
+  sal_pr,
+  chl_pr,
+  spm_summer_pr,
+  spm_winter_pr
+)
 plot(env_vars)
 ```
 
@@ -118,7 +155,6 @@ plot(env_vars)
 
 ```{r load_aoi}
 aoi <- vect(here("1_predictors", "data", "input", "UK_shelf.shp"))
-
 ```
 
 
