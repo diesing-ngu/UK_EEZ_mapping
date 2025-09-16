@@ -1,4 +1,8 @@
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
+# ignore RStudio/Rproject user data
+*.Rproj.user
+*.Rhistory
+*.RData
+*.Ruserdata
+
+# Ignore knitted html-files
+*.nb.html
