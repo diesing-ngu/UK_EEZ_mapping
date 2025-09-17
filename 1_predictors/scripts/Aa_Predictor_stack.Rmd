@@ -111,6 +111,7 @@ sum: the weighted sum of all non-NA contributing grid cells.
 
 ```{r project_predictors}
 bath_pr       <- project(x = BATH_EMODnet_none, y = template_raster)
+dist_pr       <- project(x = DIST_calc_none, y = template_raster)
 alr_m_pr         <- project(x = alr_m, y = template_raster)
 alr_s_pr        <- project(x = alr_s, y = template_raster)
 bwv_max_pr  <- project(x = BWVmax_Copernicus_Ave, y = template_raster)
@@ -149,6 +150,7 @@ env_vars <- c(
   bwv_max_pr,
   bwv_mean_pr,
   chla_pr,
+  dist_pr,
   gravel_pr,
   mud_pr,
   sand_pr,
