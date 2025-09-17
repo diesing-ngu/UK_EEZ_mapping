@@ -71,7 +71,34 @@ for (file in tif_files) {
 
 ## Create additive log-ratios of sediment composition data
 
-Mud, sand, and gravel content are compositional data that must sum to 100% (or 1 as fractional data). Projecting these data individually will lead to results that do not adhere to this. A workaround is to calculate additive log-ratios, project these and the calculate mud, sand, and gravel content from the projected additive log-ratios.
+Mud, sand, and gravel content are compositional data that must sum to 100% (or 1 as fractional data). Projecting these data individually will lead to results that do not adhere to this. A workaround is to calculate additive log-ratios, project these and the calculate mud, sand, and gravel content from the projected additive log-ratios. 
+
+### Replace zeros
+
+However, as log(0) is undefined, we first have to replace any 0 with a small number.
+
+```{r replace_zeros}
+MUD_BGS_none[MUD_BGS_none == 0] <- 0.001
+SAND_BGS_none[SAND_BGS_none == 0] <- 0.001
+GRAV_BGS_none[GRAV_BGS_none == 0] <- 0.001
+```
+
+
+### Rescale
+
+We now need to assure that sums are 100%. We do this by rescaling.
+
+```{r sum_and rescale}
+SUM <- MUD_BGS_none + SAND_BGS_none + GRAV_BGS_none
+MUD_BGS_none <- MUD_BGS_none * 100 / SUM
+SAND_BGS_none <- SAND_BGS_none * 100 / SUM
+GRAV_BGS_none <- GRAV_BGS_none * 100 / SUM
+SUM2 <- MUD_BGS_none + SAND_BGS_none + GRAV_BGS_none
+plot(SUM2)
+```
+
+
+### Create ALRs
 
 ```{r create_alr}
 alr_m <- log(MUD_BGS_none/GRAV_BGS_none)
