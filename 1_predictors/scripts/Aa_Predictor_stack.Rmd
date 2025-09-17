@@ -22,7 +22,7 @@ p_load(here,
 Resolution and corners of the extent in decimal degrees.
 
 ```{r resolution}
-r <- 0.05
+r <- 0.01
 xmin <- -9.8
 xmax <- 3.4
 ymin <- 48.2
@@ -40,24 +40,13 @@ template_raster <- rast(nrows = (ymax - ymin)/r, ncols = (xmax - xmin)/r, xmin =
 ## Load predictor layers
 
 *Ultimately, the predictor layers should be stored at Zenodo, downloaded and unzipped before loading them into the project.*
-*The individual layers would also require more meaningful names.*
-
-bathymetry        Emodnet_bathymetry_2024_0.01deg
-mud               bias_adjusted_mud
-sand              bias_adjusted_sand
-gravel            bias_adjusted_gravel
-curr_vel_max      max_velocity_original_coarse
-curr_vel_mean     mean_velocity_original_coarse
-temp              bottom_temp_original
-sal               bias_corrected_downscaled_salinity
-chl               bias_corrected_downscaled_chl
-spm_summer        summer_SPM_original
-spm_winter        winter_bias_corrected_downscaled_spm
 
 ```{r load_predictors}
 
 # List all .tif files in the input folder
 tif_files <- list.files(here("1_predictors", "data", "input"), pattern = "\\.tif$", full.names = TRUE)
+
+# Create a vector with variable names based on file names. Will be used when creating the rasterstack.
 var_names <- tools::file_path_sans_ext(basename(tif_files))
 
 # Import each .tif file and assign it to a variable named after the file
@@ -136,9 +125,7 @@ spm_winter_pr  <- project(x = SPMw_Copernicus_QQ, y = template_raster)
 
 ## Back-transform additive log-ratios
 
-mud = exp(alr_m)/(exp(alr_m) + exp(alr_s) + 1)
-sand = exp(alr_s)/(exp(alr_m) + exp(alr_s) + 1)
-gravel = 1 - (mud + sand)
+The additive log ratios can noow be back-transformed to mud, sand and gravel content.
 
 ```{r back-transform}
 mud_pr = exp(alr_m_pr)/(exp(alr_m_pr) + exp(alr_s_pr) + 1)
@@ -170,8 +157,6 @@ env_vars <- c(
 )
 
 names(env_vars) <- var_names
-
-#plot(env_vars)
 ```
 
 ## Load area of interest
@@ -183,11 +168,8 @@ aoi <- vect(here("1_predictors", "data", "input", "UK_shelf.shp"))
 
 ## Crop raster stack to UK shelf extent
 
-touches = TRUE?
-
 ```{r crop_env_vars}
 env_vars <- crop(x = env_vars, y = aoi, mask = TRUE)
-plot(env_vars)
 ```
 
 
@@ -201,6 +183,7 @@ SBS <- rasterize(sbs, template_raster, field = "Folk_Class")
 SBS[SBS$Folk_Class == "Rock"] <- NA
 
 env_vars <- crop(x = env_vars, y = SBS, mask = TRUE)
+plot(env_vars)
 ```
 
 
