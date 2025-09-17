@@ -159,19 +159,6 @@ env_vars <- c(
 names(env_vars) <- var_names
 ```
 
-## Load area of interest
-
-```{r load_aoi}
-aoi <- vect(here("1_predictors", "data", "input", "UK_shelf.shp"))
-```
-
-
-## Crop raster stack to UK shelf extent
-
-```{r crop_env_vars}
-env_vars <- crop(x = env_vars, y = aoi, mask = TRUE)
-```
-
 
 ## Blank out areas mapped as bedrock
 
@@ -183,6 +170,20 @@ SBS <- rasterize(sbs, template_raster, field = "Folk_Class")
 SBS[SBS$Folk_Class == "Rock"] <- NA
 
 env_vars <- crop(x = env_vars, y = SBS, mask = TRUE)
+```
+
+
+## Load area of interest
+
+```{r load_aoi}
+aoi <- vect(here("1_predictors", "data", "input", "UK_shelf.shp"))
+```
+
+
+## Crop raster stack to UK shelf extent
+
+```{r crop_env_vars}
+env_vars <- crop(x = env_vars, y = aoi, mask = TRUE)
 plot(env_vars)
 ```
 
