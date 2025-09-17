@@ -17,22 +17,29 @@ p_load(here,
 
 # Data processing
 
+## Define resolution and extent of template raster
+
+Resolution and corners of the extent in decimal degrees.
+
+```{r resolution}
+r <- 0.05
+xmin <- -9.8
+xmax <- 3.4
+ymin <- 48.2
+ymax <- 62.2
+```
+
+
 ## Create template rasters
-Create two template raster files with resolutions of 0.05 deg. x 0.05 deg. (template_raster_low) and 0.025 deg. x 0.025 deg. (template_raster_high).
 
-nrows = (ymax - ymin)/resolution
-ncols = (xmax - xmin)/resolution
-
-```{r templates}
-template_raster_low <- rast(nrows = 280, ncols = 264, xmin = -9.8, xmax = 3.4, ymin = 48.2, ymax = 62.2, crs = "EPSG:4326", vals = 1)
-plot(template_raster_low)
+```{r template}
+template_raster <- rast(nrows = (ymax - ymin)/r, ncols = (xmax - xmin)/r, xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, crs = "EPSG:4326", vals = 1)
 ```
 
 
 ## Load predictor layers
 
 *Ultimately, the predictor layers should be stored at Zenodo, downloaded and unzipped before loading them into the project.*
-*It might also be neater to load the predictor files in a loop.*
 *The individual layers would also require more meaningful names.*
 
 bathymetry        Emodnet_bathymetry_2024_0.01deg
@@ -50,7 +57,8 @@ spm_winter        winter_bias_corrected_downscaled_spm
 ```{r load_predictors}
 
 # List all .tif files in the input folder
-tif_files <- list.files("1_predictors/data/input", pattern = "\\.tif$", full.names = TRUE)
+tif_files <- list.files(here("1_predictors", "data", "input"), pattern = "\\.tif$", full.names = TRUE)
+var_names <- tools::file_path_sans_ext(basename(tif_files))
 
 # Import each .tif file and assign it to a variable named after the file
 for (file in tif_files) {
@@ -58,18 +66,6 @@ for (file in tif_files) {
   assign(var_name, rast(file))
 }
 
-#names
-
-mud <- bias_adjusted_mud
-sand <- bias_adjusted_sand
-gravel  <- bias_adjusted_gravel
-curr_vel_max  <- max_velocity_original_coarse
-curr_vel_mean <- mean_velocity_original_coarse
-temp    <- bottom_temp_original
-sal  <- bias_corrected_downscaled_salinity
-chl  <- bias_corrected_downscaled_chl
-spm_summer  <- summer_SPM_original
-spm_winter  <- winter_bias_corrected_downscaled_spm
 ```
 
 
@@ -78,8 +74,8 @@ spm_winter  <- winter_bias_corrected_downscaled_spm
 Mud, sand, and gravel content are compositional data that must sum to 100% (or 1 as fractional data). Projecting these data individually will lead to results that do not adhere to this. A workaround is to calculate additive log-ratios, project these and the calculate mud, sand, and gravel content from the projected additive log-ratios.
 
 ```{r create_alr}
-alr_m <- log(mud/gravel)
-alr_s <- log(sand/gravel)
+alr_m <- log(MUD_BGS_none/GRAV_BGS_none)
+alr_s <- log(SAND_BGS_none/GRAV_BGS_none)
 ```
 
 
@@ -98,16 +94,16 @@ lanczos: Lanczos windowed sinc resampling.
 sum: the weighted sum of all non-NA contributing grid cells.
 
 ```{r project_predictors}
-mud_pr         <- project(x = mud, y = template_raster_low)
-sand_pr        <- project(x = sand, y = template_raster_low)
-gravel_pr      <- project(x = gravel, y = template_raster_low)
-curr_vel_max_pr  <- project(x = curr_vel_max, y = template_raster_low)
-curr_vel_mean_pr <- project(x = curr_vel_mean, y = template_raster_low)
-temp_pr        <- project(x = temp, y = template_raster_low)
-sal_pr         <- project(x = sal, y = template_raster_low)
-chl_pr         <- project(x = chl, y = template_raster_low)
-spm_summer_pr  <- project(x = spm_summer, y = template_raster_low)
-spm_winter_pr  <- project(x = spm_winter, y = template_raster_low)
+bath_pr       <- project(x = BATH_EMODnet_none, y = template_raster)
+alr_m_pr         <- project(x = alr_m, y = template_raster)
+alr_s_pr        <- project(x = alr_s, y = template_raster)
+bwv_max_pr  <- project(x = BWVmax_Copernicus_Ave, y = template_raster)
+bwv_mean_pr <- project(x = BWVmean_Copernicus_Ave, y = template_raster)
+bwt_pr        <- project(x = BWT_Copernicus_none, y = template_raster)
+bws_pr         <- project(x = BWS_Copernicus_QQ, y = template_raster)
+chla_pr         <- project(x = CHLa_Copernicus_QQ, y = template_raster)
+spm_summer_pr  <- project(x = SPMs_Copernicus_none, y = template_raster)
+spm_winter_pr  <- project(x = SPMw_Copernicus_QQ, y = template_raster)
 ```
 
 
@@ -118,9 +114,13 @@ sand = exp(alr_s)/(exp(alr_m) + exp(alr_s) + 1)
 gravel = 1 - (mud + sand)
 
 ```{r back-transform}
-mud_1 = exp(alr_m)/(exp(alr_m) + exp(alr_s) + 1)
-sand_1 = exp(alr_s)/(exp(alr_m) + exp(alr_s) + 1)
-gravel_1 = 1 - (mud + sand)
+mud_pr = exp(alr_m_pr)/(exp(alr_m_pr) + exp(alr_s_pr) + 1)
+sand_pr = exp(alr_s_pr)/(exp(alr_m_pr) + exp(alr_s_pr) + 1)
+gravel_pr = 1 - (mud_pr + sand_pr)
+
+# Test to check that transformation worked
+sum_pr <- mud_pr + sand_pr + gravel_pr
+plot(sum_pr)
 ```
 
 
@@ -129,18 +129,22 @@ gravel_1 = 1 - (mud + sand)
 
 ```{r raster_stack}
 env_vars <- c(
+  bath_pr,
+  bws_pr,
+  bwt_pr,
+  bwv_max_pr,
+  bwv_mean_pr,
+  chla_pr,
+  gravel_pr,
   mud_pr,
   sand_pr,
-  gravel_pr,
-  curr_vel_max_pr,
-  curr_vel_mean_pr,
-  temp_pr,
-  sal_pr,
-  chl_pr,
   spm_summer_pr,
   spm_winter_pr
 )
-plot(env_vars)
+
+names(env_vars) <- var_names
+
+#plot(env_vars)
 ```
 
 ## Load area of interest
