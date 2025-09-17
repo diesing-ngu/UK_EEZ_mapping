@@ -196,10 +196,11 @@ plot(env_vars)
 The predictive seabed sediments map from the BGS includes bedrock at the seabed surface. Such areas should be blanked out in the raster stack.
 
 ```{r bedrock}
-#sbs <- vect(here("1_predictors", "data", "input", "Predictive_SBS_UK_V1_ESRI", "Classified_Seabed_Sediments_Folk_UK_v1.shp"))
-#rock <- subset(sbs, sbs$Folk_Class == "Rock")
+sbs <- vect(here("1_predictors", "data", "input", "Classified_Seabed_Sediments_Folk_UK_v1.shp"))
+SBS <- rasterize(sbs, template_raster, field = "Folk_Class")
+SBS[SBS$Folk_Class == "Rock"] <- NA
 
-
+env_vars <- crop(x = env_vars, y = SBS, mask = TRUE)
 ```
 
 
