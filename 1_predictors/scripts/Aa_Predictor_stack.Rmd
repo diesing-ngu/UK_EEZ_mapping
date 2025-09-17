@@ -207,7 +207,7 @@ env_vars <- crop(x = env_vars, y = SBS, mask = TRUE)
 # Save raster stack
 
 ```{r save_raster_stack}
-writeRaster(x = env_vars, filename = here("1_predictors", "data", "output", "env_vars.tif"), overwrite = TRUE)
+writeRaster(x = env_vars, filename = here("1_predictors", "data", "output", paste0("env_vars_", r, "deg.tif")), overwrite = TRUE)
 ```
 
 
