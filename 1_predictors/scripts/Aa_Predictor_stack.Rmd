@@ -54,7 +54,6 @@ for (file in tif_files) {
   var_name <- tools::file_path_sans_ext(basename(file))
   assign(var_name, rast(file))
 }
-
 ```
 
 
