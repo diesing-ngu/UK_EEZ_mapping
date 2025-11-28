@@ -13,7 +13,7 @@ rm(list=ls())
 if(!require("pacman")) install.packages("pacman"); library(pacman)
 p_load(here, 
        CAST,
-       corrplot,
+       corrplot, terra,
        ggplot2)
 ```
 
@@ -24,7 +24,7 @@ p_load(here,
 rm_resp <- read.csv(here("2_OC_content_model", "data", "interim", "rm_resp.csv"))
 
 predictors <- rast(here("1_predictors", "data", "output", "env_vars_0.01deg.tif"))
-predictors <- predictors[[1:11]] # Remove winter SPM
+predictors <- predictors[[1:11]] # Remove winter SPM because the extension of the data is not ideal
 ```
 
 

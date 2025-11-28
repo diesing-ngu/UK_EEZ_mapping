@@ -8,3 +8,6 @@
 # Ignore knitted html-files
 *.nb.html
 
+2_OC_content_model/scripts/A_preprocessing/Aa_data_prep.Rmd
+2_OC_content_model/scripts/B_data_exploration/Ba_data_exploration.Rmd
+2_OC_content_model/scripts/C_modelling/Ca_modelling.Rmd

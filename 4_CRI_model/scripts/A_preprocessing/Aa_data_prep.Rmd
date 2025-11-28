@@ -33,7 +33,7 @@ res <- 0.01
 ## Which response variable are we predicting?
 
 ```{r response_type}
-resp_var <- "OC"
+resp_var <- "CRI"
 ```
 
 
@@ -76,8 +76,8 @@ fishnet$ID <- 1:nrow(fishnet)
 ## Load response
 
 ```{r load_response}
-resp_data <- read.csv(here("2_OC_content_model", "data", "input", "OCdata_extended.csv"), header = TRUE, sep = ",")
-resp_data <- resp_data[,c(2:4)]
+resp_data <- read.csv(here("2_OC_content_model", "data", "input", "OCdata_ukShelf.csv"), header = TRUE, sep = ",") # The same used in the OC_content_model
+resp_data <- resp_data[,c(1,4,5,13)] # Adjusted for CRI data
 summary(resp_data)
 
 # Convert to sf
@@ -103,13 +103,13 @@ if (st_crs(resp)$proj4string != crs) {
 Centroids are calculated to average all measurements within one grid cell.
 
 ```{r centroids_surface, warning=FALSE}
-OC_centroids <- st_join(fishnet, resp)
-OC_centroids <- na.omit(OC_centroids)
-OC_centroids <- OC_centroids %>% group_by(ID) %>% summarize(OC_pc = mean(OC_pc, na.rm = TRUE))
-resp <- st_centroid(OC_centroids)
+CRI_centroids <- st_join(fishnet, resp)
+CRI_centroids <- na.omit(CRI_centroids)
+CRI_centroids <- CRI_centroids %>% group_by(ID) %>% summarize(CRIndex = mean(CRI, na.rm = TRUE))
+resp <- st_centroid(CRI_centroids)
 
 plot(predictors$BATH_EMODnet_none)
-plot(resp["OC_pc"], pch = 20, col = "black", cex = 0.5, add = TRUE)
+plot(resp["CRIndex"], pch = 20, col = "black", cex = 0.5, add = TRUE)
 ```
 
 
@@ -126,7 +126,7 @@ summary(rm_resp)
 # Save files for further use
 
 ```{r save_files}
-write_sf(resp, dsn = here("2_OC_content_model", "data", "interim"), layer = resp_var, driver = "ESRI Shapefile")
-write.csv(rm_resp, here("2_OC_content_model", "data", "interim", "rm_resp.csv"), quote = FALSE, row.names = FALSE)
+write_sf(resp, dsn = here("4_CRI_model", "data", "interim"), layer = resp_var, driver = "ESRI Shapefile")
+write.csv(rm_resp, here("4_CRI_model", "data", "interim", "rm_resp.csv"), quote = FALSE, row.names = FALSE)
 ```
 

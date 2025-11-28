@@ -10,10 +10,11 @@ output: html_notebook
 ```{r packages, message=FALSE, warning=FALSE}
 rm(list=ls())
 
+
 if(!require("pacman")) install.packages("pacman"); library(pacman)
 p_load(here, 
        CAST,
-       corrplot,
+       corrplot, terra,
        ggplot2)
 ```
 
@@ -21,10 +22,12 @@ p_load(here,
 ## Load required data
 
 ```{r load_data}
-rm_resp <- read.csv(here("2_OC_content_model", "data", "interim", "rm_resp.csv"))
+#We uplead the response data that we created in Aa_data_prep
+rm_resp <- read.csv(here("4_CRI_model", "data", "interim", "rm_resp.csv"))
 
+#Predictors layers is the same as used in the OC_model
 predictors <- rast(here("1_predictors", "data", "output", "env_vars_0.01deg.tif"))
-predictors <- predictors[[1:11]] # Remove winter SPM
+predictors <- predictors[[1:11]] # Remove winter SPM because the coverage is not ideal
 ```
 
 
@@ -33,15 +36,15 @@ predictors <- predictors[[1:11]] # Remove winter SPM
 ## Histogram of organic carbon content (weight-%)
 
 ```{r histogram_oc_stock, message=FALSE}
-hist <- ggplot(rm_resp) + 
-  geom_histogram(aes(x = OC_pc), fill = "#69b3a2", alpha = 0.8) +
+hist <- ggplot(rm_resp, aes(x = CRIndex)) +
+  geom_histogram(fill = "#69b3a2", alpha = 0.8, bins = 30) +
   theme_bw() +
-  xlab("OC content (weight-%)") +
+  xlab("CRI Index (weight-%)") +
   ylab("count")
 
 hist
 
-jpeg(filename = here("2_OC_content_model", "figures", "OC_obs_histogram.jpg"), width = 15, height = 10, units = "cm", res = 300)
+jpeg(filename = here("4_CRI_model", "figures", "CRI_obs_histogram.jpg"), width = 15, height = 10, units = "cm", res = 300)
 hist
 dev.off()
 ```
@@ -52,7 +55,7 @@ dev.off()
 ```{r corr_plot}
 corrplot.mixed(cor(rm_resp[, names(predictors)]), lower.col =  "black", tl.pos = "lt", number.cex = 0.6)
 
-jpeg(filename = here("2_OC_content_model", "figures", "correlation_plot.jpg"), width = 30, height = 30, units = "cm", res = 300)
+jpeg(filename = here("4_CRI_model", "figures", "correlation_plot.jpg"), width = 30, height = 30, units = "cm", res = 300)
 corrplot.mixed(cor(rm_resp[, names(predictors)]), lower.col =  "black", tl.pos = "lt", number.cex = 0.6)
 dev.off()
 ```

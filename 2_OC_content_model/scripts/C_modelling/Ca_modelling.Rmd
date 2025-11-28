@@ -60,7 +60,8 @@ dat <- "all_ll_0.01"
 
 ## Distances in environmental space
 
-Distances in environmental (feature) space are computed.
+Distances in environmental (feature) space are computed. This measures how different two locations are in term of the predictor variables
+it is multivariate dissimilarity, tell us how much a sample's environment (surroundings) differs from the environmental represented for the predictor variables.
 
 ```{r env_space_dist, message=FALSE}
 dist_env <- geodist(st_as_sf(OC), 
@@ -75,7 +76,8 @@ plot(dist_env) + scale_x_log10()
 
 ## Distances in geographic space
 
-Distances in geographic space are computed.
+Distances in geographic space are computed. This measures the physical distance, separation on earth in meter/km, 
+computes geodesic distances between sample locations and points in the model domain (the area we want to predict)
 
 ```{r geogr_space_dist, message=FALSE}
 dist_geogr <- geodist(st_as_sf(OC), 
@@ -102,7 +104,7 @@ knndmfolds <- knndm(tpoints = st_as_sf(OC),
 
 
 ## Distances in geographic space including CV distances
-
+ This allow us to assess how spatially separated each test fold is from the predictiion locations (domain)
 ```{r geogr_space_dist2, message=FALSE}
 dist_geogr2 <- geodist(st_as_sf(OC), 
                        predictors,

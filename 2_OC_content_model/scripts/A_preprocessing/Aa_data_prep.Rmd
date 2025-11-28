@@ -76,8 +76,8 @@ fishnet$ID <- 1:nrow(fishnet)
 ## Load response
 
 ```{r load_response}
-resp_data <- read.csv(here("2_OC_content_model", "data", "input", "OCdata_extended.csv"), header = TRUE, sep = ",")
-resp_data <- resp_data[,c(2:4)]
+resp_data <- read.csv(here("2_OC_content_model", "data", "input", "OCdata_UKshelf.csv"), header = TRUE, sep = ",")
+resp_data <- resp_data[,c(2,4,5,8)]
 summary(resp_data)
 
 # Convert to sf
