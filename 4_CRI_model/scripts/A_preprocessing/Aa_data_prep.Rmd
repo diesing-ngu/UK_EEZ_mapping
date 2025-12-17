@@ -1,5 +1,5 @@
 ---
-title: "Organic carbon content - data preparation"
+title: "Carbon reactivity index - data preparation"
 output:
   html_document:
     df_print: paged

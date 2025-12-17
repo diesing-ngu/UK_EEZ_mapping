@@ -1,5 +1,5 @@
 ---
-title: "Organic carbon content - data exploration"
+title: "Carbon reactivity index - data exploration"
 output: html_notebook
 ---
 
@@ -14,7 +14,8 @@ rm(list=ls())
 if(!require("pacman")) install.packages("pacman"); library(pacman)
 p_load(here, 
        CAST,
-       corrplot, terra,
+       corrplot, 
+       terra,
        ggplot2)
 ```
 
@@ -22,10 +23,10 @@ p_load(here,
 ## Load required data
 
 ```{r load_data}
-#We uplead the response data that we created in Aa_data_prep
+#We load the response data that we created in Aa_data_prep
 rm_resp <- read.csv(here("4_CRI_model", "data", "interim", "rm_resp.csv"))
 
-#Predictors layers is the same as used in the OC_model
+#Predictors layers are the same as used in the OC_model
 predictors <- rast(here("1_predictors", "data", "output", "env_vars_0.01deg.tif"))
 predictors <- predictors[[1:11]] # Remove winter SPM because the coverage is not ideal
 ```
@@ -39,7 +40,7 @@ predictors <- predictors[[1:11]] # Remove winter SPM because the coverage is not
 hist <- ggplot(rm_resp, aes(x = CRIndex)) +
   geom_histogram(fill = "#69b3a2", alpha = 0.8, bins = 30) +
   theme_bw() +
-  xlab("CRI Index (weight-%)") +
+  xlab("CRI Index (-)") +
   ylab("count")
 
 hist

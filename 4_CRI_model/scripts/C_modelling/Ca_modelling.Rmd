@@ -1,5 +1,5 @@
 ---
-title: "Organic carbon content - modelling"
+title: "Carbon reactivity index - modelling"
 output: html_notebook
 ---
 
@@ -46,14 +46,14 @@ summary(rm_resp)
 
 Define response variable, unit and data:
 
-all: OCdata_extended.csv
+core: OCdata_ukShelf.csv
 ll: unprojected (latitude and longitude)
 0.01: resolution of predictors in degrees
 
 ```{r response_type}
 resp_var <- "CRI"
-resp_unit <- "weight-%"
-dat <- "all_ll_0.01"
+resp_unit <- "-"
+dat <- "core_ll_0.01"
 ```
 
 
@@ -174,26 +174,6 @@ Plot of R2 over the model runs.
 plot(model)
 ```
 
-Selected Variables:
-BWS_Copernicus_QQ BWT_Copernicus_none MUD_BGS_none DIST_calc_none CHLa_Copernicus_QQ BWVmean_Copernicus_Ave GRAV_BGS_none SPMs_Copernicus_none
----
-Quantile Random Forest
-
-2496 samples
-   8 predictor
-
-No pre-processing
-Resampling: Cross-Validated (5 fold)
-Summary of sample sizes: 2006, 2020, 1932, 1997, 2029 
-Resampling results across tuning parameters:
-
-  mtry  RMSE        Rsquared   MAE
-  2     0.07117094  0.1707100  0.05353246
-  5     0.07232390  0.1552349  0.05443890
-  8     0.07245830  0.1558352  0.05460094
-
-Rsquared was used to select the optimal model using the largest value.
-The final value used for the model was mtry = 2.  
 
 ## Validation statistics
 
@@ -226,8 +206,8 @@ validation
 hist <- ggplot(t) + 
   geom_histogram(aes(x = model.pred.obs), bins = 30, fill = "#69b3a2", alpha = 0.5, position = "identity") +
   geom_histogram(aes(x = model.pred.pred), bins = 30, fill = "#404080", alpha = 0.5, position = "identity") +
-  annotate("text", x = 5, y = 1500, label = "observed", colour = "#69b3a2") +
-  annotate("text", x = 5, y = 1350, label = "predicted", colour = "#404080") +
+  annotate("text", x = 0.95, y = 500, label = "observed", colour = "#69b3a2") +
+  annotate("text", x = 0.95, y = 470, label = "predicted", colour = "#404080") +
   theme_bw() +
   xlab(paste0(resp_var, " (", resp_unit, ")")) +
   ylab("count")
@@ -342,15 +322,12 @@ CRI_pir <- CRI_pi90 / CRI_med
 CRI_trainDI <- trainDI(model = model,
                         variables = sel_preds)
 print(CRI_trainDI)
-```
-DI of 2496 observation
-Predictors: BWS_Copernicus_QQ BWT_Copernicus_none MUD_BGS_none DIST_calc_none CHLa_Copernicus_QQ BWVmean_Copernicus_Ave GRAV_BGS_none SPMs_Copernicus_none  
-```{r}
+
 CRI_aoa <- aoa(newdata = predictors, 
                 model = model,
                 trainDI = CRI_trainDI,
-                variables = sel_preds,
-)
+                variables = sel_preds
+               )
 
 plot(CRI_aoa)
 
