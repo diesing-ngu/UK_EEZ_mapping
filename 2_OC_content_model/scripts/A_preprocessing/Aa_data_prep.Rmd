@@ -26,7 +26,7 @@ p_load(here,
 
 ```{r projection}
 crs <- "EPSG:4326" # WGS84
-res <- 0.01
+res <- 0.05
 ```
 
 
@@ -42,8 +42,8 @@ resp_var <- "OC"
 Potentially relevant predictor variables are loaded.
 
 ```{r load_predictors}
-predictors <- rast(here("1_predictors", "data", "output", "env_vars_0.01deg.tif"))
-predictors <- predictors[[1:11]] # Remove winter SPM
+predictors <- rast(here("1_predictors", "data", "output", "env_vars_bio-oracle_0.05deg.tif"))
+#predictors <- predictors[[1:11]] # Remove winter SPM
 plot(predictors)
 ```
 

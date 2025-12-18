@@ -31,8 +31,8 @@ p_load(here,
 ## Load required data
 
 ```{r load_data}
-predictors <- rast(here("1_predictors", "data", "output", "env_vars_0.01deg.tif"))
-predictors <- predictors[[1:11]] # Remove winter SPM
+predictors <- rast(here("1_predictors", "data", "output", "env_vars_bio-oracle_0.05deg.tif"))
+#predictors <- predictors[[1:11]] # Remove winter SPM
 
 OC <- vect(here("2_OC_content_model", "data", "interim", "OC.shp"))
 
@@ -52,7 +52,7 @@ ll: unprojected (latitude and longitude)
 ```{r response_type}
 resp_var <- "OC"
 resp_unit <- "weight-%"
-dat <- "all_ll_0.01"
+dat <- "all_ll_bio-oracle_0.05"
 ```
 
 
