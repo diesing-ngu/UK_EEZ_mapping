@@ -45,6 +45,7 @@ Potentially relevant predictor variables are loaded.
 predictors <- rast(here("1_predictors", "data", "output", "env_vars_0.01deg.tif"))
 predictors <- predictors[[1:11]] # Remove winter SPM
 plot(predictors)
+
 ```
 
 
@@ -76,7 +77,7 @@ fishnet$ID <- 1:nrow(fishnet)
 ## Load response
 
 ```{r load_response}
-resp_data <- read.csv(here("2_OC_content_model", "data", "input", "OCdata_ukShelf.csv"), header = TRUE, sep = ",") # The same used in the OC_content_model
+resp_data <- read.csv(here("2_OC_content_model", "data", "input", "OCdata_ukShelf.csv"), header = TRUE, sep = ",")
 resp_data <- resp_data[,c(1,4,5,13)] # Adjusted for CRI data
 summary(resp_data)
 
