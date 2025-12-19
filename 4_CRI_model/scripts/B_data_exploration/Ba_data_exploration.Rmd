@@ -85,5 +85,17 @@ for (i in names(predictors)) {
 ```
 
 
+## Scatter plots
+
+```{r scatter_plots, message=FALSE, warning=FALSE}
+
+for (i in names(predictors)) {
+
+print(ggplot(rm_resp, aes(x=CRIndex, y=rm_resp[,i])) + 
+        geom_point() +
+        geom_smooth(method = lm) +
+        scale_y_continuous(name = names(rm_resp[i])))
+}
+```
 
 
