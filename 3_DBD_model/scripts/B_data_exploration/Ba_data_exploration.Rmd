@@ -1,0 +1,102 @@
+---
+title: "Dry bulk density - data exploration"
+output: html_notebook
+---
+
+# Preparations
+
+## Install packages
+
+```{r packages, message=FALSE, warning=FALSE}
+rm(list=ls())
+
+
+if(!require("pacman")) install.packages("pacman"); library(pacman)
+p_load(here, 
+       CAST,
+       corrplot, 
+       terra,
+       ggplot2)
+```
+
+
+## Load required data
+
+```{r load_data}
+#We load the response data that we created in Aa_data_prep
+rm_resp <- read.csv(here("3_DBD_model", "data", "interim", "rm_resp.csv"))
+
+#Predictors layers are loaded
+predictors <- rast(here("3_DBD_model", "data", "interim", "predictors.tif"))
+```
+
+
+# Data exploration
+
+## Histogram
+
+```{r histogram, message=FALSE}
+hist <- ggplot(rm_resp, aes(x = DBD)) +
+  geom_histogram(fill = "#69b3a2", alpha = 0.8, bins = 30) +
+  theme_bw() +
+  xlab("DBD (g/cm3)") +
+  ylab("count")
+
+hist
+
+jpeg(filename = here("3_DBD_model", "figures", "DBD_obs_histogram.jpg"), width = 15, height = 10, units = "cm", res = 300)
+hist
+dev.off()
+```
+
+
+## Correlation plot
+
+```{r corr_plot}
+corrplot.mixed(cor(rm_resp[, names(predictors)]), lower.col =  "black", tl.pos = "lt", number.cex = 0.6)
+
+jpeg(filename = here("3_DBD_model", "figures", "correlation_plot.jpg"), width = 30, height = 30, units = "cm", res = 300)
+corrplot.mixed(cor(rm_resp[, names(predictors)]), lower.col =  "black", tl.pos = "lt", number.cex = 0.6)
+dev.off()
+```
+
+
+## Environmental space
+
+A visual check to what extent the samples cover the environmental space. This is useful as legacy data were used and no formal sampling design was applied in the analysis.
+
+* Blue: Samples
+
+* Grey: Environmental data (based on random subsample)
+
+```{r env_space_sf}
+smp <- as.data.frame(spatSample(x = predictors, size = nrow((rm_resp)), method = "random", na.rm = TRUE))
+
+
+for (i in names(predictors)) {
+    
+  print(ggplot() +
+          geom_density(data = rm_resp, aes(x=rm_resp[,i]),colour="cornflowerblue",fill="cornflowerblue", alpha=0.1,linewidth=1) +
+          geom_density(data = smp, aes(x=smp[,i]), colour="grey",fill="grey", alpha=0.1, linewidth=1) +
+          scale_x_continuous(name = names(rm_resp[i])))
+        
+}
+```
+
+
+## Scatter plots
+
+```{r scatter_plots, message=FALSE, warning=FALSE}
+
+for (i in names(predictors)) {
+
+print(ggplot(rm_resp, aes(x=rm_resp[,1], y=rm_resp[,i])) + 
+        geom_point() +
+        geom_smooth(method = lm) +
+        scale_x_continuous((name= names(rm_resp)[1])) +
+        scale_y_continuous(name = names(rm_resp[i])))
+}
+```
+
+
+
