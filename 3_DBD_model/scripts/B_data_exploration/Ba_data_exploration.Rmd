@@ -1,5 +1,5 @@
 ---
-title: "Carbon reactivity index - data exploration"
+title: "Dry bulk density - data exploration"
 output: html_notebook
 ---
 
@@ -24,11 +24,10 @@ p_load(here,
 
 ```{r load_data}
 #We load the response data that we created in Aa_data_prep
-rm_resp <- read.csv(here("4_CRI_model", "data", "interim", "rm_resp.csv"))
+rm_resp <- read.csv(here("3_DBD_model", "data", "interim", "rm_resp.csv"))
 
 #Predictors layers are loaded
-predictors <- rast(here("1_predictors", "data", "output", "env_vars_0.01deg.tif"))
-predictors <- predictors[[1:11]] # Remove winter SPM
+predictors <- rast(here("3_DBD_model", "data", "interim", "predictors.tif"))
 ```
 
 
@@ -37,15 +36,15 @@ predictors <- predictors[[1:11]] # Remove winter SPM
 ## Histogram
 
 ```{r histogram, message=FALSE}
-hist <- ggplot(rm_resp, aes(x = CRIndex)) +
+hist <- ggplot(rm_resp, aes(x = DBD)) +
   geom_histogram(fill = "#69b3a2", alpha = 0.8, bins = 30) +
   theme_bw() +
-  xlab("CRI Index (-)") +
+  xlab("DBD (g/cm3)") +
   ylab("count")
 
 hist
 
-jpeg(filename = here("4_CRI_model", "figures", "CRI_obs_histogram.jpg"), width = 15, height = 10, units = "cm", res = 300)
+jpeg(filename = here("3_DBD_model", "figures", "DBD_obs_histogram.jpg"), width = 15, height = 10, units = "cm", res = 300)
 hist
 dev.off()
 ```
@@ -56,7 +55,7 @@ dev.off()
 ```{r corr_plot}
 corrplot.mixed(cor(rm_resp[, names(predictors)]), lower.col =  "black", tl.pos = "lt", number.cex = 0.6)
 
-jpeg(filename = here("4_CRI_model", "figures", "correlation_plot.jpg"), width = 30, height = 30, units = "cm", res = 300)
+jpeg(filename = here("3_DBD_model", "figures", "correlation_plot.jpg"), width = 30, height = 30, units = "cm", res = 300)
 corrplot.mixed(cor(rm_resp[, names(predictors)]), lower.col =  "black", tl.pos = "lt", number.cex = 0.6)
 dev.off()
 ```
@@ -98,5 +97,6 @@ print(ggplot(rm_resp, aes(x=rm_resp[,1], y=rm_resp[,i])) +
         scale_y_continuous(name = names(rm_resp[i])))
 }
 ```
+
 
 

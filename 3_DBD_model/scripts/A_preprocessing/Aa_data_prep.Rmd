@@ -1,5 +1,5 @@
 ---
-title: "Carbon reactivity index - data preparation"
+title: "Dry bulk density - data preparation"
 output:
   html_document:
     df_print: paged
@@ -33,7 +33,7 @@ res <- 0.01
 ## Which response variable are we predicting?
 
 ```{r response_type}
-resp_var <- "CRI"
+resp_var <- "DBD"
 ```
 
 
@@ -44,6 +44,9 @@ Potentially relevant predictor variables are loaded.
 ```{r load_predictors}
 predictors <- rast(here("1_predictors", "data", "output", "env_vars_0.01deg.tif"))
 predictors <- predictors[[1:11]] # Remove winter SPM
+#OC <- rast(here("2_OC_content_model", "data", "output", "OC_all_ll_0.01_median_2025-12-18.tif"))
+#predictors <- c(predictors, OC)
+#names(predictors)[dim(predictors)[3]] <- "OC"
 plot(predictors)
 
 ```
@@ -77,12 +80,12 @@ fishnet$ID <- 1:nrow(fishnet)
 ## Load response
 
 ```{r load_response}
-resp_data <- read.csv(here("2_OC_content_model", "data", "input", "OCdata_ukShelf.csv"), header = TRUE, sep = ",")
-resp_data <- resp_data[,c(1,4,5,13)] # Adjusted for CRI data
+resp_data <- read.csv(here("3_DBD_model", "data", "input", "dbd.csv"), header = TRUE, sep = ",")
+resp_data <- resp_data[,c(2,3,4,7)]
 summary(resp_data)
 
 # Convert to sf
-resp <- st_as_sf(resp_data, coords = c("Longitude", "Latitude"), crs = "EPSG:4326")
+resp <- st_as_sf(resp_data, coords = c("longitude", "latitude"), crs = "EPSG:4326")
 
 summary(resp)
 ```
@@ -104,13 +107,13 @@ if (st_crs(resp)$proj4string != crs) {
 Centroids are calculated to average all measurements within one grid cell.
 
 ```{r centroids_surface, warning=FALSE}
-CRI_centroids <- st_join(fishnet, resp)
-CRI_centroids <- na.omit(CRI_centroids)
-CRI_centroids <- CRI_centroids %>% group_by(ID) %>% summarize(CRIndex = mean(CRI, na.rm = TRUE))
-resp <- st_centroid(CRI_centroids)
+centroids <- st_join(fishnet, resp)
+centroids <- na.omit(centroids)
+centroids <- centroids %>% group_by(ID) %>% summarize(DBD = mean(dbd_g_cm.3, na.rm = TRUE))
+resp <- st_centroid(centroids)
 
 plot(predictors$BATH_EMODnet_none)
-plot(resp["CRIndex"], pch = 20, col = "black", cex = 0.5, add = TRUE)
+plot(resp[,1], pch = 20, col = "black", cex = 0.5, add = TRUE)
 ```
 
 
@@ -127,7 +130,8 @@ summary(rm_resp)
 # Save files for further use
 
 ```{r save_files}
-write_sf(resp, dsn = here("4_CRI_model", "data", "interim"), layer = resp_var, driver = "ESRI Shapefile")
-write.csv(rm_resp, here("4_CRI_model", "data", "interim", "rm_resp.csv"), quote = FALSE, row.names = FALSE)
+write_sf(resp, dsn = here("3_DBD_model", "data", "interim"), layer = resp_var, driver = "ESRI Shapefile")
+write.csv(rm_resp, here("3_DBD_model", "data", "interim", "rm_resp.csv"), quote = FALSE, row.names = FALSE)
+writeRaster(predictors, here("3_DBD_model", "data", "interim", "predictors.tif"), overwrite = TRUE)
 ```
 

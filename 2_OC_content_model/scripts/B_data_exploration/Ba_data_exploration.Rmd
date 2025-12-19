@@ -23,8 +23,7 @@ p_load(here,
 ```{r load_data}
 rm_resp <- read.csv(here("2_OC_content_model", "data", "interim", "rm_resp.csv"))
 
-predictors <- rast(here("1_predictors", "data", "output", "env_vars_0.01deg.tif"))
-predictors <- predictors[[1:11]] # Remove winter SPM
+predictors <- rast(here("2_OC_content_model", "data", "interim", "predictors.tif"))
 ```
 
 
@@ -81,5 +80,19 @@ for (i in names(predictors)) {
 ```
 
 
+
+## Scatter plots
+
+```{r scatter_plots, message=FALSE, warning=FALSE}
+
+for (i in names(predictors)) {
+
+print(ggplot(rm_resp, aes(x=rm_resp[,1], y=rm_resp[,i])) + 
+        geom_point() +
+        geom_smooth(method = lm) +
+        scale_x_continuous((name= names(rm_resp)[1])) +
+        scale_y_continuous(name = names(rm_resp[i])))
+}
+```
 
 

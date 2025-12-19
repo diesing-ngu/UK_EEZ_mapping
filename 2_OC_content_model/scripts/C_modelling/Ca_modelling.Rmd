@@ -31,8 +31,7 @@ p_load(here,
 ## Load required data
 
 ```{r load_data}
-predictors <- rast(here("1_predictors", "data", "output", "env_vars_0.01deg.tif"))
-predictors <- predictors[[1:11]] # Remove winter SPM
+predictors <- rast(here("2_OC_content_model", "data", "interim", "predictors.tif"))
 
 OC <- vect(here("2_OC_content_model", "data", "interim", "OC.shp"))
 
@@ -291,36 +290,37 @@ for (i in 1:length(sel_preds)) {
 
 # Predict QRF model
 
-## Predict OC
+## Predict respons
 
-OC is predicted. Median values of the QRF distribution are calculated as central values. The 90% prediction interval and the prediction interval ratio are calculated as measures of uncertainty.
+The response variable is predicted. Median values of the QRF distribution are calculated as central values. Different percentiles are predicted as well.
 
 ```{r predict_oc}
 preds <- raster::stack(predictors[[sel_preds]])
-OC_med <- predict(preds, model$finalModel, what = 0.5)
-OC_p95 <- predict(preds, model$finalModel, what = 0.95)
-OC_p5 <- predict(preds, model$finalModel, what = 0.05)
-OC_pi90 <- OC_p95 - OC_p5
-OC_pir <- OC_pi90 / OC_med
+med <- predict(preds, model$finalModel, what = 0.5)
+p5 <- predict(preds, model$finalModel, what = 0.05)
+p25 <- predict(preds, model$finalModel, what = 0.25)
+p75 <- predict(preds, model$finalModel, what = 0.75)
+p95 <- predict(preds, model$finalModel, what = 0.95)
+
 ```
 
 
 ## Area of applicability
 
 ```{r aoa}
-OC_trainDI <- trainDI(model = model,
+trainDI <- trainDI(model = model,
                         variables = sel_preds)
-print(OC_trainDI)
+print(trainDI)
 
-OC_aoa <- aoa(newdata = predictors, 
+aoa <- aoa(newdata = predictors, 
                 model = model,
-                trainDI = OC_trainDI,
+                trainDI = trainDI,
                 variables = sel_preds,
 )
 
-plot(OC_aoa)
+plot(aoa)
 
-fr <- freq(OC_aoa$AOA)
+fr <- freq(aoa$AOA)
 print(paste0("AOA = ", round(100*fr$count[2]/ sum(fr$count),2), "% of pixels"))
 ```
 
@@ -328,18 +328,20 @@ print(paste0("AOA = ", round(100*fr$count[2]/ sum(fr$count),2), "% of pixels"))
 ## Plot results
 
 ```{r plot_results}
-plot(rast(OC_med), main = "OC median")
-plot(rast(OC_pi90), main = "90% prediction interval")
-plot(rast(OC_pir), main = "Prediction interval ratio")
-plot(OC_aoa$DI, main = "Dissimilarity index")
-plot(OC_aoa$AOA, main = "Area of applicability")
+plot(rast(p5), main = paste0(resp_var, " P5"))
+plot(rast(p25), main = paste0(resp_var, " P25"))
+plot(rast(med), main = paste0(resp_var, " median"))
+plot(rast(p75), main = paste0(resp_var, " P75"))
+plot(rast(p95), main = paste0(resp_var, " P95"))
+plot(aoa$DI, main = "Dissimilarity index")
+plot(aoa$AOA, main = "Area of applicability")
 ```
 
 
 ## Convert AOA from raster to polygon
 
 ```{r aoa_poly}
-aoa_poly <- as.polygons(OC_aoa$AOA, dissolve = TRUE)
+aoa_poly <- as.polygons(aoa$AOA, dissolve = TRUE)
 plot(aoa_poly)
 
 write_sf(st_as_sf(aoa_poly), dsn = here("2_OC_content_model", "data", "output"), layer = paste0(resp_var, "_", dat, "_AOA_", Sys.Date()), driver = "ESRI Shapefile")
@@ -349,13 +351,13 @@ write_sf(st_as_sf(aoa_poly), dsn = here("2_OC_content_model", "data", "output"),
 ## Export results
 
 ```{r export_results}
-writeRaster(OC_med, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_median_", Sys.Date(), ".tif"))
-writeRaster(OC_p5, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_P5_", Sys.Date(), ".tif"))
-writeRaster(OC_p95, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_P95_", Sys.Date(), ".tif"))
-writeRaster(OC_pi90, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_PI90_", Sys.Date(), ".tif"))
-writeRaster(OC_pir, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat,  "_PIR_", Sys.Date(), ".tif"))
-writeRaster(OC_aoa$DI, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_DI_", Sys.Date(), ".tif"))
-writeRaster(OC_aoa$AOA, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_AOA_", Sys.Date(), ".tif"))
+writeRaster(med, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_median_", Sys.Date(), ".tif"))
+writeRaster(p5, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_P5_", Sys.Date(), ".tif"))
+writeRaster(p25, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_P25_", Sys.Date(), ".tif"))
+writeRaster(p75, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_P75_", Sys.Date(), ".tif"))
+writeRaster(p95, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_P95_", Sys.Date(), ".tif"))
+writeRaster(aoa$DI, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_DI_", Sys.Date(), ".tif"))
+writeRaster(aoa$AOA, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_AOA_", Sys.Date(), ".tif"))
 ```
 
 
