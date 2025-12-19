@@ -34,9 +34,9 @@ predictors <- predictors[[1:11]] # Remove winter SPM
 
 # Data exploration
 
-## Histogram of organic carbon content (weight-%)
+## Histogram
 
-```{r histogram_oc_stock, message=FALSE}
+```{r histogram, message=FALSE}
 hist <- ggplot(rm_resp, aes(x = CRIndex)) +
   geom_histogram(fill = "#69b3a2", alpha = 0.8, bins = 30) +
   theme_bw() +
