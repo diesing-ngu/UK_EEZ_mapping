@@ -44,6 +44,9 @@ Potentially relevant predictor variables are loaded.
 ```{r load_predictors}
 predictors <- rast(here("1_predictors", "data", "output", "env_vars_0.01deg.tif"))
 predictors <- predictors[[1:11]] # Remove winter SPM
+dbd <- rast(here("3_DBD_model", "data", "output", "DBD_ll_0.01_median_2025-12-18.tif"))
+predictors <- c(predictors, dbd)
+names(predictors)[dim(predictors)[3]] <- "DBD"
 plot(predictors)
 ```
 
@@ -103,13 +106,13 @@ if (st_crs(resp)$proj4string != crs) {
 Centroids are calculated to average all measurements within one grid cell.
 
 ```{r centroids_surface, warning=FALSE}
-OC_centroids <- st_join(fishnet, resp)
-OC_centroids <- na.omit(OC_centroids)
-OC_centroids <- OC_centroids %>% group_by(ID) %>% summarize(OC_pc = mean(OC_pc, na.rm = TRUE))
-resp <- st_centroid(OC_centroids)
+centroids <- st_join(fishnet, resp)
+centroids <- na.omit(centroids)
+centroids <- centroids %>% group_by(ID) %>% summarize(OC_pc = mean(OC_pc, na.rm = TRUE))
+resp <- st_centroid(centroids)
 
 plot(predictors$BATH_EMODnet_none)
-plot(resp["OC_pc"], pch = 20, col = "black", cex = 0.5, add = TRUE)
+plot(resp[,1], pch = 20, col = "black", cex = 0.5, add = TRUE)
 ```
 
 
@@ -128,5 +131,6 @@ summary(rm_resp)
 ```{r save_files}
 write_sf(resp, dsn = here("2_OC_content_model", "data", "interim"), layer = resp_var, driver = "ESRI Shapefile")
 write.csv(rm_resp, here("2_OC_content_model", "data", "interim", "rm_resp.csv"), quote = FALSE, row.names = FALSE)
+writeRaster(predictors, here("2_OC_content_model", "data", "interim", "predictors.tif"))
 ```
 
