@@ -31,10 +31,8 @@ p_load(here,
 ## Load required data
 
 ```{r load_data}
-predictors <- rast(here("1_predictors", "data", "output", "env_vars_0.01deg.tif"))
-predictors <- predictors[[1:11]] # Remove winter SPM
+predictors <- rast(here("4_CRI_model", "data", "interim", "predictors.tif"))
 
-#The one created in 4_CRI_model Aa_data_prep 
 CRI <- vect(here("4_CRI_model", "data", "interim", "CRI.shp"))
 
 rm_resp <- read.csv(here("4_CRI_model", "data", "interim", "rm_resp.csv"))

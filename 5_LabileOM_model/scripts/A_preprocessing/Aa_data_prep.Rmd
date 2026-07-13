@@ -33,7 +33,7 @@ res <- 0.01
 ## Which response variable are we predicting?
 
 ```{r response_type}
-resp_var <- "CRI"
+resp_var <- "Labile_OM"
 ```
 
 
@@ -43,8 +43,8 @@ Potentially relevant predictor variables are loaded.
 
 ```{r load_predictors}
 predictors <- rast(here("2_OC_content_model", "data", "interim", "predictors.tif"))
-OC <- rast(here("2_OC_content_model","data", "output _ including DBD","OC_all_ll_0.01_median_2026-06-25.tif"))
-predictors <- c(predictors, OC)
+OCC <- rast(here("2_OC_content_model","data", "output _ including DBD","OC_all_ll_0.01_median_2026-06-25.tif"))
+predictors <- c(predictors, OCC)
 names(predictors)[dim(predictors)[3]] <- "OCC"
 plot(predictors)
 ```
@@ -79,8 +79,8 @@ fishnet$ID <- 1:nrow(fishnet)
 
 1. St Andrews data set
 ```{r load_response}
-resp_data_1 <- read.csv(here("4_CRI_model", "data", "input", "OCdata_ukShelf.csv"), header = TRUE, sep = ",")
-resp_data_1 <- resp_data_1[,c(1,4,5,13)] # Adjusted for CRI data
+resp_data_1 <- read.csv(here("5_LabileOM_model", "data", "input", "OCdata_ukShelf.csv"), header = TRUE, sep = ",")
+resp_data_1 <- resp_data_1[,c(1,4,5,9)] # Adjusted for OM Labile data
 summary(resp_data_1)
 
 # Convert to sf
@@ -91,9 +91,9 @@ summary(resp_1)
 
 2. CEFAS data set:
 ```{r}
-resp_data_2 <- read.csv(here("4_CRI_model", "data", "input", "Poseidon_BC_externalCollaboration.csv"), header = TRUE, sep = ",")
-head(resp_data_2)
-resp_data_2 <- resp_data_2[,c(1,2,3,8)]
+resp_data_2 <- read.csv(here("5_LabileOM_model", "data", "input", "Poseidon_BC_externalCollaboration.csv"), header = TRUE, sep = ",")
+colnames(resp_data_2)
+resp_data_2 <- resp_data_2[,c(1,2,3,7)]
 summary(resp_data_2)
 
 # Convert to sf
@@ -130,7 +130,7 @@ Centroids are calculated to average all measurements within one grid cell.
 ```{r centroids_surface, warning=FALSE}
 CRI_centroids <- st_join(fishnet, resp)
 CRI_centroids <- na.omit(CRI_centroids)
-CRI_centroids <- CRI_centroids %>% group_by(ID) %>% summarize(CRIndex = mean(CRI, na.rm = TRUE))
+CRI_centroids <- CRI_centroids %>% group_by(ID) %>% summarize(CRIndex = mean(Labile_OM, na.rm = TRUE))
 resp <- st_centroid(CRI_centroids)
 
 plot(predictors$BATH_EMODnet_none)
@@ -151,8 +151,8 @@ summary(rm_resp)
 # Save files for further use
 
 ```{r save_files}
-write_sf(resp, dsn = here("4_CRI_model", "data", "interim"), layer = resp_var, driver = "ESRI Shapefile")
-write.csv(rm_resp, here("4_CRI_model", "data", "interim", "rm_resp.csv"), quote = FALSE, row.names = FALSE)
-writeRaster(predictors, here("4_CRI_model", "data", "interim", "predictors.tif"), overwrite=TRUE)
+write_sf(resp, dsn = here("5_LabileOM_model", "data", "interim"), layer = resp_var, driver = "ESRI Shapefile")
+write.csv(rm_resp, here("5_LabileOM_model", "data", "interim", "rm_resp.csv"), quote = FALSE, row.names = FALSE)
+writeRaster(predictors, here("5_LabileOM_model", "data", "interim", "predictors.tif"), overwrite=TRUE)
 ```
 
