@@ -344,6 +344,11 @@ plot(rast(LabileOM_p75), main = "Labile OM P75")
 plot(rast(LabileOM_p95), main = "Labile OM P95")
 plot(LabileOM_aoa$DI, main = "Dissimilarity index")
 plot(LabileOM_aoa$AOA, main = "Area of applicability")
+# Uncertainty maps (QRF prediction interval width)
+LabileOM_PI_abs <- mask(rast(LabileOM_p95) - rast(LabileOM_p5), LabileOM_aoa$AOA, maskvalue = 0)
+LabileOM_PI_rel <- mask((rast(LabileOM_p95) - rast(LabileOM_p5)) / rast(LabileOM_med) * 100, LabileOM_aoa$AOA, maskvalue = 0)
+plot(LabileOM_PI_abs, main = "Labile OM uncertainty abs (P95-P5)")
+plot(LabileOM_PI_rel, main = "Labile OM uncertainty rel (P95-P5)/median [%]")
 
 # Save individual maps
 map_list <- list(
@@ -364,12 +369,37 @@ for (m in map_list) {
 }
 ```
 
+## AOA Validation
+```{r}
+AOA <- aoa(predictors, model, LPD = TRUE, verbose = FALSE)
+class(AOA)
+prediction <- predict(predictors,model,na.rm=T)
+truediff <- abs(prediction-response)
+plot(rast(list(prediction,response)),main=c("prediction","reference"))
+plot(truediff,main="true prediction error")
+plot(AOA$DI,main="DI")
+plot(AOA$LPD,main="LPD")
+#mask prediction with AOA:
+plot(mask(prediction,AOA$AOA,maskvalue=0),main="Prediction for AOA")
+
+AOA_spatial <- aoa(predictors, model, LPD = TRUE, verbose = FALSE)
+
+AOA_random <- aoa(predictors, model_random, LPD = FALSE, verbose = FALSE)
+
+plot(AOA_spatial$DI,main="DI")
+plot(AOA_spatial$LPD,main="LPD")
+#mask prediction with AOA:
+plot(mask(prediction,AOA_spatial$AOA,maskvalue=0),main="prediction for AOA (spatial CV error applies)",
+     cex.main=0.75)
+plot(mask(prediction_random,AOA_random$AOA,maskvalue=0),main="prediction for AOA (random CV error applies)", cex.main=0.75)
+```
 
 ## Convert AOA from raster to polygon
 
 ```{r aoa_poly}
 aoa_poly <- as.polygons(LabileOM_aoa$AOA, dissolve = TRUE)
 plot(aoa_poly)
+
 
 write_sf(st_as_sf(aoa_poly), dsn = here("5_LabileOM_model", "data", "output"), layer = paste0(resp_var, "_", dat, "_AOA_", Sys.Date()), driver = "ESRI Shapefile")
 ```
@@ -378,13 +408,15 @@ write_sf(st_as_sf(aoa_poly), dsn = here("5_LabileOM_model", "data", "output"), l
 ## Export results
 
 ```{r export_results}
-writeRaster(CRI_med, paste0(here("5_LabileOM_model", "data", "output"), "/", resp_var, "_", dat, "_median_", Sys.Date(), ".tif"))
-writeRaster(CRI_p5, paste0(here("5_LabileOM_model", "data", "output"), "/", resp_var, "_", dat, "_P5_", Sys.Date(), ".tif"))
-writeRaster(CRI_p25, paste0(here("5_LabileOM_model", "data", "output"), "/", resp_var, "_", dat, "_P25_", Sys.Date(), ".tif"))
-writeRaster(CRI_p75, paste0(here("5_LabileOM_model", "data", "output"), "/", resp_var, "_", dat, "_P75_", Sys.Date(), ".tif"))
-writeRaster(CRI_p95, paste0(here("5_LabileOM_model", "data", "output"), "/", resp_var, "_", dat, "_P95_", Sys.Date(), ".tif"))
-writeRaster(CRI_aoa$DI, paste0(here("5_LabileOM_model", "data", "output"), "/", resp_var, "_", dat, "_DI_", Sys.Date(), ".tif"))
-writeRaster(CRI_aoa$AOA, paste0(here("5_LabileOM_model", "data", "output"), "/", resp_var, "_", dat, "_AOA_", Sys.Date(), ".tif"))
+writeRaster(LabileOM_med, paste0(here("5_LabileOM_model", "data", "output"), "/", resp_var, "_", dat, "_median_", Sys.Date(), ".tif"))
+writeRaster(LabileOM_p5, paste0(here("5_LabileOM_model", "data", "output"), "/", resp_var, "_", dat, "_P5_", Sys.Date(), ".tif"))
+writeRaster(LabileOM_p25, paste0(here("5_LabileOM_model", "data", "output"), "/", resp_var, "_", dat, "_P25_", Sys.Date(), ".tif"))
+writeRaster(LabileOM_p75, paste0(here("5_LabileOM_model", "data", "output"), "/", resp_var, "_", dat, "_P75_", Sys.Date(), ".tif"))
+writeRaster(LabileOM_p95, paste0(here("5_LabileOM_model", "data", "output"), "/", resp_var, "_", dat, "_P95_", Sys.Date(), ".tif"))
+writeRaster(LabileOM_aoa$DI, paste0(here("5_LabileOM_model", "data", "output"), "/", resp_var, "_", dat, "_DI_", Sys.Date(), ".tif"))
+writeRaster(LabileOM_aoa$AOA, paste0(here("5_LabileOM_model", "data", "output"), "/", resp_var, "_", dat, "_AOA_", Sys.Date(), ".tif"))
+writeRaster(LabileOM_PI_abs, paste0(here("5_LabileOM_model", "data", "output"), "/", resp_var, "_", dat, "_PI_abs_", Sys.Date(), ".tif"))
+writeRaster(LabileOM_PI_rel, paste0(here("5_LabileOM_model", "data", "output"), "/", resp_var, "_", dat, "_PI_rel_", Sys.Date(), ".tif"))
 ```
 
 
