@@ -39,7 +39,7 @@ resp_var <- "Labile_OM"
 
 # Predictor variables
 
-Potentially relevant predictor variables are loaded.
+Potentially relevant predictor variables are loaded. In here we do not include CRI as a predictor because OM Labile and CRI content are too correlated to be informative one of the other. Here, then we include predictors, OC and DBD layers as predictors
 
 ```{r load_predictors}
 predictors <- rast(here("2_OC_content_model", "data", "interim", "predictors.tif"))
