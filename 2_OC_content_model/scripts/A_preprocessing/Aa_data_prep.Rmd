@@ -44,7 +44,7 @@ Potentially relevant predictor variables are loaded.
 ```{r load_predictors}
 predictors <- rast(here("1_predictors", "data", "output", "env_vars_0.01deg.tif"))
 predictors <- predictors[[1:11]] # Remove winter SPM
-dbd <- rast(here("3_DBD_model", "data", "output", "DBD_ll_0.01_median_2025-12-18.tif"))
+dbd <- rast(here("3_DBD_model", "data", "output", "DBD_ll_0.01_median_2026-06-24.tif"))
 predictors <- c(predictors, dbd)
 names(predictors)[dim(predictors)[3]] <- "DBD"
 plot(predictors)
@@ -79,14 +79,36 @@ fishnet$ID <- 1:nrow(fishnet)
 ## Load response
 
 ```{r load_response}
-resp_data <- read.csv(here("2_OC_content_model", "data", "input", "OCdata_extended.csv"), header = TRUE, sep = ",")
-resp_data <- resp_data[,c(2:4)]
-summary(resp_data)
+resp_data_1 <- read.csv(here("2_OC_content_model", "data", "input", "OCdata_extended.csv"), header = TRUE, sep = ",")
+resp_data_1 <- resp_data_1[,c(1:4)]
+summary(resp_data_1)
 
 # Convert to sf
-resp <- st_as_sf(resp_data, coords = c("Longitude", "Latitude"), crs = "EPSG:4326")
+resp_1 <- st_as_sf(resp_data_1, coords = c("Longitude", "Latitude"), crs = "EPSG:4326")
 
-summary(resp)
+summary(resp_1)
+```
+
+2. CEFAS data set:
+```{r load_response}
+resp_data_2 <- read.csv(here("2_OC_content_model", "data", "input", "Poseidon_BC_externalCollaboration.csv"), header = TRUE, sep = ",")
+head(resp_data_2)
+resp_data_2 <- resp_data_2[,c(1,2,3,10)]
+summary(resp_data_2)
+
+# Convert to sf
+resp_2 <- st_as_sf(resp_data_2, coords = c("X", "Y"), crs = "EPSG:4326")
+
+summary(resp_2)
+```
+
+Now we will bind these two data sets together to start the modelling process
+```{r}
+head(resp_1)
+names(resp_1) <- names(resp_1)
+head(resp_2)
+names(resp_2) <- names(resp_1)
+resp <- rbind(resp_1, resp_2, deparse.level =1)
 ```
 
 
@@ -131,6 +153,6 @@ summary(rm_resp)
 ```{r save_files}
 write_sf(resp, dsn = here("2_OC_content_model", "data", "interim"), layer = resp_var, driver = "ESRI Shapefile")
 write.csv(rm_resp, here("2_OC_content_model", "data", "interim", "rm_resp.csv"), quote = FALSE, row.names = FALSE)
-writeRaster(predictors, here("2_OC_content_model", "data", "interim", "predictors.tif"))
-```
+writeRaster(predictors, here("2_OC_content_model", "data", "interim", "predictors.tif"), overwrite=TRUE)
+ ```
 

@@ -1,5 +1,5 @@
 ---
-title: "Dry bulk density - data exploration"
+title: "Carbon reactivity index - data exploration"
 output: html_notebook
 ---
 
@@ -24,10 +24,11 @@ p_load(here,
 
 ```{r load_data}
 #We load the response data that we created in Aa_data_prep
-rm_resp <- read.csv(here("3_DBD_model", "data", "interim", "rm_resp.csv"))
+rm_resp <- read.csv(here("5_LabileOM_model", "data", "interim", "rm_resp.csv"))
 
 #Predictors layers are loaded
-predictors <- rast(here("3_DBD_model", "data", "interim", "predictors.tif"))
+predictors <- rast(here("5_LabileOM_model", "data", "interim", "predictors.tif"))
+
 ```
 
 
@@ -36,15 +37,15 @@ predictors <- rast(here("3_DBD_model", "data", "interim", "predictors.tif"))
 ## Histogram
 
 ```{r histogram, message=FALSE}
-hist <- ggplot(rm_resp, aes(x = dbd)) +
+hist <- ggplot(rm_resp, aes(x = OMLab_pc)) +
   geom_histogram(fill = "#69b3a2", alpha = 0.8, bins = 30) +
   theme_bw() +
-  xlab("DBD (g/cm3)") +
+  xlab("OM Labile content (%)") +
   ylab("count")
 
 hist
 
-jpeg(filename = here("3_DBD_model", "figures", "DBD_obs_histogram.jpg"), width = 15, height = 10, units = "cm", res = 300)
+jpeg(filename = here("5_LabileOM_model", "figures", "CRI_obs_histogram.jpg"), width = 15, height = 10, units = "cm", res = 300)
 hist
 dev.off()
 ```
@@ -55,7 +56,7 @@ dev.off()
 ```{r corr_plot}
 corrplot.mixed(cor(rm_resp[, names(predictors)]), lower.col =  "black", tl.pos = "lt", number.cex = 0.6)
 
-jpeg(filename = here("3_DBD_model", "figures", "correlation_plot.jpg"), width = 30, height = 30, units = "cm", res = 300)
+jpeg(filename = here("5_LabileOM_model", "figures", "correlation_plot.jpg"), width = 30, height = 30, units = "cm", res = 300)
 corrplot.mixed(cor(rm_resp[, names(predictors)]), lower.col =  "black", tl.pos = "lt", number.cex = 0.6)
 dev.off()
 ```
@@ -97,6 +98,5 @@ print(ggplot(rm_resp, aes(x=rm_resp[,1], y=rm_resp[,i])) +
         scale_y_continuous(name = names(rm_resp[i])))
 }
 ```
-
 
 

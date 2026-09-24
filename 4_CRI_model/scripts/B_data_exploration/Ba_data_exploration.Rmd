@@ -27,8 +27,8 @@ p_load(here,
 rm_resp <- read.csv(here("4_CRI_model", "data", "interim", "rm_resp.csv"))
 
 #Predictors layers are loaded
-predictors <- rast(here("1_predictors", "data", "output", "env_vars_0.01deg.tif"))
-predictors <- predictors[[1:11]] # Remove winter SPM
+predictors <- rast(here("4_CRI_model", "data", "interim", "predictors.tif"))
+
 ```
 
 
