@@ -109,7 +109,7 @@ Now we will bind these two data sets together to start the modelling process
 head(resp_1)
 names(resp_1) <- names(resp_1)
 head(resp_2)
-names(resp_2) <- names
+names(resp_2) <- names(resp_1)
 resp <- rbind(resp_1, resp_2, deparse.level =1)
 ```
 

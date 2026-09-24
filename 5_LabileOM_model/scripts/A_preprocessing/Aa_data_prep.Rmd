@@ -1,5 +1,5 @@
 ---
-title: "Carbon reactivity index - data preparation"
+title: "Labile organic matter - data preparation"
 output:
   html_document:
     df_print: paged
@@ -80,7 +80,7 @@ fishnet$ID <- 1:nrow(fishnet)
 1. St Andrews data set
 ```{r load_response}
 resp_data_1 <- read.csv(here("5_LabileOM_model", "data", "input", "OCdata_ukShelf.csv"), header = TRUE, sep = ",")
-resp_data_1 <- resp_data_1[,c(1,4,5,9)] # Adjusted for OM Labile data
+resp_data_1 <- resp_data_1[,c(1,4,5,9)] # OMLab_pc (labile OM, %)
 summary(resp_data_1)
 
 # Convert to sf
@@ -92,8 +92,8 @@ summary(resp_1)
 2. CEFAS data set:
 ```{r}
 resp_data_2 <- read.csv(here("5_LabileOM_model", "data", "input", "Poseidon_BC_externalCollaboration.csv"), header = TRUE, sep = ",")
-colnames(resp_data_2)
-resp_data_2 <- resp_data_2[,c(1,2,3,7)]
+head(resp_data_2)
+resp_data_2 <- resp_data_2[,c(1,2,3,4)] # TGA_Labil_OM_pct (labile OM, %)
 summary(resp_data_2)
 
 # Convert to sf
@@ -116,7 +116,7 @@ resp <- rbind(resp_1, resp_2, deparse.level =1)
 
 Check if the response variable has the defined projection. Re-project if this is not the case.
 
-```{r uniform_proj_CRI}
+```{r uniform_proj_LabileOM}
 if (st_crs(resp)$proj4string != crs) {
   resp <- st_transform(resp, crs)
 }
@@ -128,13 +128,13 @@ if (st_crs(resp)$proj4string != crs) {
 Centroids are calculated to average all measurements within one grid cell.
 
 ```{r centroids_surface, warning=FALSE}
-CRI_centroids <- st_join(fishnet, resp)
-CRI_centroids <- na.omit(CRI_centroids)
-CRI_centroids <- CRI_centroids %>% group_by(ID) %>% summarize(CRIndex = mean(Labile_OM, na.rm = TRUE))
-resp <- st_centroid(CRI_centroids)
+LabileOM_centroids <- st_join(fishnet, resp)
+LabileOM_centroids <- na.omit(LabileOM_centroids)
+LabileOM_centroids <- LabileOM_centroids %>% group_by(ID) %>% summarize(OMLab_pc = mean(OMLab_pc, na.rm = TRUE))
+resp <- st_centroid(LabileOM_centroids)
 
 plot(predictors$BATH_EMODnet_none)
-plot(resp["CRIndex"], pch = 20, col = "black", cex = 0.5, add = TRUE)
+plot(resp["OMLab_pc"], pch = 20, col = "black", cex = 0.5, add = TRUE)
 ```
 
 

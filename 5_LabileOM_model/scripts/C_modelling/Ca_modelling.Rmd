@@ -1,5 +1,5 @@
 ---
-title: "Carbon reactivity index - modelling"
+title: "Labile organic matter - modelling"
 output: html_notebook
 ---
 
@@ -50,7 +50,7 @@ ll: unprojected (latitude and longitude)
 
 ```{r response_type}
 resp_var <- "Labile_OM_pc"
-resp_unit <- "-"
+resp_unit <- "%"
 dat <- "core_ll_0.01"
 ```
 
@@ -198,7 +198,7 @@ validation
       ME  RMSE    r2   CCC
 1 -0.005 0.071 0.158 0.305
 
-## Histograms of observed and predicted  Labile organic matter (weight-%)
+## Histograms of observed and predicted labile organic matter (%)
 
 ```{r histogram_oc, message=FALSE}
 hist <- ggplot(t) + 
@@ -300,9 +300,9 @@ for (i in 1:length(sel_preds)) {
 
 # Predict QRF model
 
-## Predict CRI
+## Predict labile organic matter
 
-CRI is predicted. Median values of the QRF distribution are calculated as central values. The 90% prediction interval and the prediction interval ratio are calculated as measures of uncertainty.
+Labile organic matter content is predicted. Median values of the QRF distribution are calculated as central values. The 90% prediction interval and the prediction interval ratio are calculated as measures of uncertainty.
 
 ```{r predict_oc}
 preds <- raster::stack(predictors[[sel_preds]])
@@ -369,8 +369,8 @@ for (m in map_list) {
 }
 ```
 
-## AOA Validation
-```{r}
+## AOA validation (not run: needs `response`, `model_random` and `prediction_random`, which are not defined yet)
+```{r aoa_validation, eval=FALSE}
 AOA <- aoa(predictors, model, LPD = TRUE, verbose = FALSE)
 class(AOA)
 prediction <- predict(predictors,model,na.rm=T)

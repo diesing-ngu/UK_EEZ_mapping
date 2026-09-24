@@ -43,8 +43,8 @@ Potentially relevant predictor variables are loaded.
 
 ```{r load_predictors}
 predictors <- rast(here("2_OC_content_model", "data", "interim", "predictors.tif"))
-OC <- rast(here("2_OC_content_model","data", "output _ including DBD","OC_all_ll_0.01_median_2026-06-25.tif"))
-predictors <- c(predictors, OC)
+OCC <- rast(here("2_OC_content_model","data", "output _ including DBD","OC_all_ll_0.01_median_2026-06-25.tif"))
+predictors <- c(predictors, OCC)
 names(predictors)[dim(predictors)[3]] <- "OCC"
 plot(predictors)
 ```

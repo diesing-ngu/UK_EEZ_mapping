@@ -1,5 +1,5 @@
 ---
-title: "Carbon reactivity index - data exploration"
+title: "Labile organic matter - data exploration"
 output: html_notebook
 ---
 
@@ -45,7 +45,7 @@ hist <- ggplot(rm_resp, aes(x = OMLab_pc)) +
 
 hist
 
-jpeg(filename = here("5_LabileOM_model", "figures", "CRI_obs_histogram.jpg"), width = 15, height = 10, units = "cm", res = 300)
+jpeg(filename = here("5_LabileOM_model", "figures", "LabileOM_obs_histogram.jpg"), width = 15, height = 10, units = "cm", res = 300)
 hist
 dev.off()
 ```
