@@ -42,11 +42,10 @@ resp_var <- "CRI"
 Potentially relevant predictor variables are loaded.
 
 ```{r load_predictors}
-predictors <- rast(here("2_OC_content_model", "data", "interim", "predictors.tif"))
-OC <- rast(here("2_OC_content_model","data", "output _ including DBD","OC_all_ll_0.01_median_2026-06-25.tif"))
-predictors <- c(predictors, OC)
-names(predictors)[dim(predictors)[3]] <- "OCC"
+predictors <- rast(here("1_predictors", "data", "output", "env_vars_0.01deg.tif"))
+predictors <- predictors[[1:11]] # Remove winter SPM
 plot(predictors)
+
 ```
 
 
@@ -77,38 +76,15 @@ fishnet$ID <- 1:nrow(fishnet)
 
 ## Load response
 
-1. St Andrews data set
 ```{r load_response}
-resp_data_1 <- read.csv(here("4_CRI_model", "data", "input", "OCdata_ukShelf.csv"), header = TRUE, sep = ",")
-resp_data_1 <- resp_data_1[,c(1,4,5,13)] # Adjusted for CRI data
-summary(resp_data_1)
+resp_data <- read.csv(here("2_OC_content_model", "data", "input", "OCdata_ukShelf.csv"), header = TRUE, sep = ",")
+resp_data <- resp_data[,c(1,4,5,13)] # Adjusted for CRI data
+summary(resp_data)
 
 # Convert to sf
-resp_1 <- st_as_sf(resp_data_1, coords = c("Longitude", "Latitude"), crs = "EPSG:4326")
+resp <- st_as_sf(resp_data, coords = c("Longitude", "Latitude"), crs = "EPSG:4326")
 
-summary(resp_1)
-```
-
-2. CEFAS data set:
-```{r}
-resp_data_2 <- read.csv(here("4_CRI_model", "data", "input", "Poseidon_BC_externalCollaboration.csv"), header = TRUE, sep = ",")
-head(resp_data_2)
-resp_data_2 <- resp_data_2[,c(1,2,3,8)]
-summary(resp_data_2)
-
-# Convert to sf
-resp_2 <- st_as_sf(resp_data_2, coords = c("X", "Y"), crs = "EPSG:4326")
-
-summary(resp_2)
-```
-
-Now we will bind these two data sets together to start the modelling process
-```{r}
-head(resp_1)
-names(resp_1) <- names(resp_1)
-head(resp_2)
-names(resp_2) <- names(resp_1)
-resp <- rbind(resp_1, resp_2, deparse.level =1)
+summary(resp)
 ```
 
 
@@ -153,6 +129,5 @@ summary(rm_resp)
 ```{r save_files}
 write_sf(resp, dsn = here("4_CRI_model", "data", "interim"), layer = resp_var, driver = "ESRI Shapefile")
 write.csv(rm_resp, here("4_CRI_model", "data", "interim", "rm_resp.csv"), quote = FALSE, row.names = FALSE)
-writeRaster(predictors, here("4_CRI_model", "data", "interim", "predictors.tif"), overwrite=TRUE)
 ```
 

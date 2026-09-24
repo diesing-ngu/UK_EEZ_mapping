@@ -236,13 +236,9 @@ dev.off()
 
 ```{r variable_importance_plot, warning=FALSE}
 imp <- varImp(model$finalModel, scale = FALSE)
-if (!is.data.frame(imp) && "importance" %in% names(imp)) imp <- imp$importance
-imp <- as.data.frame(imp)
 imp$Predictor <- rownames(imp)
 rownames(imp) <- NULL
-
-importance_col <- if ("Overall" %in% names(imp)) "Overall" else names(imp)[1]
-imp <- imp[order(imp[[importance_col]], decreasing = TRUE), c("Predictor", importance_col)]
+imp <- imp[order(imp[1], decreasing = TRUE), c(2, 1)]
 colnames(imp)[2] <- "IncMSE"
 
 impfig <- imp %>%
@@ -288,6 +284,7 @@ class(m2) <- "randomForest"
 for (i in 1:length(sel_preds)) {
   partialPlot(x = m2, pred.data = rm_resp, x.var = sel_preds[i], main = "", xlab = sel_preds[i], ylab = paste0(resp_var, " (", resp_unit, ")"))
 }
+
 ```
 
 
@@ -338,11 +335,6 @@ plot(rast(p75), main = paste0(resp_var, " P75"))
 plot(rast(p95), main = paste0(resp_var, " P95"))
 plot(aoa$DI, main = "Dissimilarity index")
 plot(aoa$AOA, main = "Area of applicability")
-# Uncertainty maps (QRF prediction interval width)
-PI_abs <- mask(rast(p95) - rast(p5), aoa$AOA, maskvalue = 0)
-PI_rel <- mask((rast(p95) - rast(p5)) / rast(med) * 100, aoa$AOA, maskvalue = 0)
-plot(PI_abs, main = paste0(resp_var, " uncertainty abs (P95-P5)"))
-plot(PI_rel, main = paste0(resp_var, " uncertainty rel (P95-P5)/median [%]"))
 ```
 
 
@@ -366,8 +358,6 @@ writeRaster(p75, paste0(here("2_OC_content_model", "data", "output"), "/", resp_
 writeRaster(p95, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_P95_", Sys.Date(), ".tif"))
 writeRaster(aoa$DI, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_DI_", Sys.Date(), ".tif"))
 writeRaster(aoa$AOA, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_AOA_", Sys.Date(), ".tif"))
-writeRaster(PI_abs, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_PI_abs_", Sys.Date(), ".tif"))
-writeRaster(PI_rel, paste0(here("2_OC_content_model", "data", "output"), "/", resp_var, "_", dat, "_PI_rel_", Sys.Date(), ".tif"))
 ```
 
 

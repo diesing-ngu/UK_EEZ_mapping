@@ -79,39 +79,17 @@ fishnet$ID <- 1:nrow(fishnet)
 
 ## Load response
 
-The response data is divided in two data sets from two different organizations. Here we show the code to import both and merge them into one data set. The data set is then converted to a spatial object.    
-
-1. St Andrews data set:
 ```{r load_response}
-resp_data_1 <- read.csv(here("3_DBD_model", "data", "input", "dbd.csv"), header = TRUE, sep = ",")
-resp_data_1 <- resp_data_1[,c(2,3,4,7)]
-summary(resp_data_1)
+resp_data <- read.csv(here("3_DBD_model", "data", "input", "dbd.csv"), header = TRUE, sep = ",")
+resp_data <- resp_data[,c(2,3,4,7)]
+summary(resp_data)
 
 # Convert to sf
-resp_1 <- st_as_sf(resp_data_1, coords = c("longitude", "latitude"), crs = "EPSG:4326")
+resp <- st_as_sf(resp_data, coords = c("longitude", "latitude"), crs = "EPSG:4326")
 
-summary(resp_1)
-```
-2. CEFAS data set:
-```{r load_response}
-resp_data_2 <- read.csv(here("3_DBD_model", "data", "input", "Poseidon_BC_externalCollaboration.csv"), header = TRUE, sep = ",")
-resp_data_2 <- resp_data_2[,c(1,2,3,9)]
-summary(resp_data_2)
-
-# Convert to sf
-resp_2 <- st_as_sf(resp_data_2, coords = c("X", "Y"), crs = "EPSG:4326")
-
-summary(resp_2)
+summary(resp)
 ```
 
-Now we will bind these two data sets together to start the modelling process
-```{r}
-head(resp_1)
-names(resp_1) <- names(resp_1)
-head(resp_2)
-names(resp_2) <- names
-resp <- rbind(resp_1, resp_2, deparse.level =1)
-```
 
 ## Ensure uniform projection
 

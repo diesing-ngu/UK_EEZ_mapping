@@ -36,7 +36,7 @@ predictors <- rast(here("3_DBD_model", "data", "interim", "predictors.tif"))
 ## Histogram
 
 ```{r histogram, message=FALSE}
-hist <- ggplot(rm_resp, aes(x = dbd)) +
+hist <- ggplot(rm_resp, aes(x = DBD)) +
   geom_histogram(fill = "#69b3a2", alpha = 0.8, bins = 30) +
   theme_bw() +
   xlab("DBD (g/cm3)") +

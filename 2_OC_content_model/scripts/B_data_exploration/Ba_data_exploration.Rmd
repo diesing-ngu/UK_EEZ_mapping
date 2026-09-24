@@ -22,6 +22,7 @@ p_load(here,
 
 ```{r load_data}
 rm_resp <- read.csv(here("2_OC_content_model", "data", "interim", "rm_resp.csv"))
+
 predictors <- rast(here("2_OC_content_model", "data", "interim", "predictors.tif"))
 ```
 
