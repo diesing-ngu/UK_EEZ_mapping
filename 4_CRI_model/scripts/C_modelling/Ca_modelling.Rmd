@@ -31,10 +31,8 @@ p_load(here,
 ## Load required data
 
 ```{r load_data}
-predictors <- rast(here("1_predictors", "data", "output", "env_vars_0.01deg.tif"))
-predictors <- predictors[[1:11]] # Remove winter SPM
+predictors <- rast(here("4_CRI_model", "data", "interim", "predictors.tif"))
 
-#The one created in 4_CRI_model Aa_data_prep 
 CRI <- vect(here("4_CRI_model", "data", "interim", "CRI.shp"))
 
 rm_resp <- read.csv(here("4_CRI_model", "data", "interim", "rm_resp.csv"))
@@ -347,6 +345,11 @@ plot(rast(CRI_p75), main = "CRI P75")
 plot(rast(CRI_p95), main = "CRI P95")
 plot(CRI_aoa$DI, main = "Dissimilarity index")
 plot(CRI_aoa$AOA, main = "Area of applicability")
+# Uncertainty maps (QRF prediction interval width)
+CRI_PI_abs <- mask(rast(CRI_p95) - rast(CRI_p5), CRI_aoa$AOA, maskvalue = 0)
+CRI_PI_rel <- mask((rast(CRI_p95) - rast(CRI_p5)) / rast(CRI_med) * 100, CRI_aoa$AOA, maskvalue = 0)
+plot(CRI_PI_abs, main = "CRI uncertainty abs (P95-P5)")
+plot(CRI_PI_rel, main = "CRI uncertainty rel (P95-P5)/median [%]")
 ```
 
 
@@ -370,6 +373,8 @@ writeRaster(CRI_p75, paste0(here("4_CRI_model", "data", "output"), "/", resp_var
 writeRaster(CRI_p95, paste0(here("4_CRI_model", "data", "output"), "/", resp_var, "_", dat, "_P95_", Sys.Date(), ".tif"))
 writeRaster(CRI_aoa$DI, paste0(here("4_CRI_model", "data", "output"), "/", resp_var, "_", dat, "_DI_", Sys.Date(), ".tif"))
 writeRaster(CRI_aoa$AOA, paste0(here("4_CRI_model", "data", "output"), "/", resp_var, "_", dat, "_AOA_", Sys.Date(), ".tif"))
+writeRaster(CRI_PI_abs, paste0(here("4_CRI_model", "data", "output"), "/", resp_var, "_", dat, "_PI_abs_", Sys.Date(), ".tif"))
+writeRaster(CRI_PI_rel, paste0(here("4_CRI_model", "data", "output"), "/", resp_var, "_", dat, "_PI_rel_", Sys.Date(), ".tif"))
 ```
 
 

@@ -1,5 +1,5 @@
 ---
-title: "Dry bulk density - data preparation"
+title: "Labile organic matter - data preparation"
 output:
   html_document:
     df_print: paged
@@ -33,22 +33,20 @@ res <- 0.01
 ## Which response variable are we predicting?
 
 ```{r response_type}
-resp_var <- "DBD"
+resp_var <- "Labile_OM"
 ```
 
 
 # Predictor variables
 
-Potentially relevant predictor variables are loaded.
+Potentially relevant predictor variables are loaded. In here we do not include CRI as a predictor because OM Labile and CRI content are too correlated to be informative one of the other. Here, then we include predictors, OC and DBD layers as predictors
 
 ```{r load_predictors}
-predictors <- rast(here("1_predictors", "data", "output", "env_vars_0.01deg.tif"))
-predictors <- predictors[[1:11]] # Remove winter SPM
-#OC <- rast(here("2_OC_content_model", "data", "output", "OC_all_ll_0.01_median_2025-12-18.tif"))
-#predictors <- c(predictors, OC)
-#names(predictors)[dim(predictors)[3]] <- "OC"
+predictors <- rast(here("2_OC_content_model", "data", "interim", "predictors.tif"))
+OCC <- rast(here("2_OC_content_model","data", "output _ including DBD","OC_all_ll_0.01_median_2026-06-25.tif"))
+predictors <- c(predictors, OCC)
+names(predictors)[dim(predictors)[3]] <- "OCC"
 plot(predictors)
-
 ```
 
 
@@ -79,23 +77,23 @@ fishnet$ID <- 1:nrow(fishnet)
 
 ## Load response
 
-The response data is divided in two data sets from two different organizations. Here we show the code to import both and merge them into one data set. The data set is then converted to a spatial object.    
-
-1. St Andrews data set:
+1. St Andrews data set
 ```{r load_response}
-resp_data_1 <- read.csv(here("3_DBD_model", "data", "input", "dbd.csv"), header = TRUE, sep = ",")
-resp_data_1 <- resp_data_1[,c(2,3,4,7)]
+resp_data_1 <- read.csv(here("5_LabileOM_model", "data", "input", "OCdata_ukShelf.csv"), header = TRUE, sep = ",")
+resp_data_1 <- resp_data_1[,c(1,4,5,9)] # OMLab_pc (labile OM, %)
 summary(resp_data_1)
 
 # Convert to sf
-resp_1 <- st_as_sf(resp_data_1, coords = c("longitude", "latitude"), crs = "EPSG:4326")
+resp_1 <- st_as_sf(resp_data_1, coords = c("Longitude", "Latitude"), crs = "EPSG:4326")
 
 summary(resp_1)
 ```
+
 2. CEFAS data set:
-```{r load_response}
-resp_data_2 <- read.csv(here("3_DBD_model", "data", "input", "Poseidon_BC_externalCollaboration.csv"), header = TRUE, sep = ",")
-resp_data_2 <- resp_data_2[,c(1,2,3,9)]
+```{r}
+resp_data_2 <- read.csv(here("5_LabileOM_model", "data", "input", "Poseidon_BC_externalCollaboration.csv"), header = TRUE, sep = ",")
+head(resp_data_2)
+resp_data_2 <- resp_data_2[,c(1,2,3,4)] # TGA_Labil_OM_pct (labile OM, %)
 summary(resp_data_2)
 
 # Convert to sf
@@ -113,11 +111,12 @@ names(resp_2) <- names(resp_1)
 resp <- rbind(resp_1, resp_2, deparse.level =1)
 ```
 
+
 ## Ensure uniform projection
 
 Check if the response variable has the defined projection. Re-project if this is not the case.
 
-```{r uniform_proj_CRI}
+```{r uniform_proj_LabileOM}
 if (st_crs(resp)$proj4string != crs) {
   resp <- st_transform(resp, crs)
 }
@@ -129,13 +128,13 @@ if (st_crs(resp)$proj4string != crs) {
 Centroids are calculated to average all measurements within one grid cell.
 
 ```{r centroids_surface, warning=FALSE}
-centroids <- st_join(fishnet, resp)
-centroids <- na.omit(centroids)
-centroids <- centroids %>% group_by(ID) %>% summarize(DBD = mean(dbd_g_cm.3, na.rm = TRUE))
-resp <- st_centroid(centroids)
+LabileOM_centroids <- st_join(fishnet, resp)
+LabileOM_centroids <- na.omit(LabileOM_centroids)
+LabileOM_centroids <- LabileOM_centroids %>% group_by(ID) %>% summarize(OMLab_pc = mean(OMLab_pc, na.rm = TRUE))
+resp <- st_centroid(LabileOM_centroids)
 
 plot(predictors$BATH_EMODnet_none)
-plot(resp[,1], pch = 20, col = "black", cex = 0.5, add = TRUE)
+plot(resp["OMLab_pc"], pch = 20, col = "black", cex = 0.5, add = TRUE)
 ```
 
 
@@ -152,8 +151,8 @@ summary(rm_resp)
 # Save files for further use
 
 ```{r save_files}
-write_sf(resp, dsn = here("3_DBD_model", "data", "interim"), layer = resp_var, driver = "ESRI Shapefile")
-write.csv(rm_resp, here("3_DBD_model", "data", "interim", "rm_resp.csv"), quote = FALSE, row.names = FALSE)
-writeRaster(predictors, here("3_DBD_model", "data", "interim", "predictors.tif"), overwrite = TRUE)
+write_sf(resp, dsn = here("5_LabileOM_model", "data", "interim"), layer = resp_var, driver = "ESRI Shapefile")
+write.csv(rm_resp, here("5_LabileOM_model", "data", "interim", "rm_resp.csv"), quote = FALSE, row.names = FALSE)
+writeRaster(predictors, here("5_LabileOM_model", "data", "interim", "predictors.tif"), overwrite=TRUE)
 ```
 

@@ -1,0 +1,8 @@
+# Use the * to ignore all files in the folder
+*
+
+# Use the ! to exclude the .gitignore-file. 
+# Now everything will be ignored except this file you are looking at. 
+# This ensures we all have the same folders,
+# but prevents their contents from being pushed to the remote repository. 
+!.gitignore
