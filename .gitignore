@@ -8,3 +8,8 @@
 # Ignore knitted html-files
 *.nb.html
 
+results/Surface_Sediment_DBD_UKEEZ.csv
+results/Surface_Sediment_OC_OM_UKEEZ.csv
+
+# Local figure scripts (kept on this computer only)
+results/scripts/
