@@ -1,3 +1,5 @@
+![Workflow to reproduce the four predicted layers: building the predictor stack, the per-model pipeline (A_preprocessing, B_data_exploration, C_modelling) and the run order](results/Workflow_diagram.png)
+
 ## Spatial models of organic carbon content, dry bulk density, fraction of recalcitrant to total organic matter and labile organic matter on the UK continental shelf
 
 ### Overview
