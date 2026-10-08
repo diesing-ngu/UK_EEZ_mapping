@@ -116,7 +116,7 @@ resp <- rbind(resp_1, resp_2, deparse.level =1)
 
 Check if the response variable has the defined projection. Re-project if this is not the case.
 
-```{r uniform_proj_CRI}
+```{r uniform_proj_resp}
 if (st_crs(resp)$proj4string != crs) {
   resp <- st_transform(resp, crs)
 }

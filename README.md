@@ -1,9 +1,11 @@
-## Spatial models of organic carbon content, dry bulk density, carbon reactivity index and labile organic matter on the UK continental shelf
+![Workflow to reproduce the four predicted layers: building the predictor stack, the per-model pipeline (A_preprocessing, B_data_exploration, C_modelling) and the run order](results/Workflow_diagram.png)
+
+## Spatial models of organic carbon content, dry bulk density, fraction of recalcitrant to total organic matter and labile organic matter on the UK continental shelf
 
 ### Overview
-The aim is to provide new data layers on dry bulk density, organic carbon content and the carbon reactivity index of surficial sediments of the United Kingdom's continental shelf. These layers will be used in a model intercomparison study to explore the potential net effects of mobile bottom fishing on organic carbon stored in seabed sediments. We model and spatially predict organic carbon content, dry bulk density and the carbon reactivity index ([Smeaton and Austin, 2022](https://doi.org/10.1029/2021GL097481)) using a quantile regression forest ([Meinshausen, 2006](https://jmlr.org/papers/volume7/meinshausen06a/meinshausen06a.pdf)) framework. Outputs are aligned with c-squares on which fishing intensity data are reported by ICES; however, the spatial resolution has been increased from 0.05 degrees to 0.01 degrees.
+The aim is to provide new data layers on dry bulk density, organic carbon content, the fraction of recalcitrant to total organic matter (FRecal) and labile organic matter of surficial sediments of the United Kingdom's continental shelf. These layers will be used in a model intercomparison study to explore the potential net effects of mobile bottom fishing on organic carbon stored in seabed sediments. We model and spatially predict organic carbon content, dry bulk density, FRecal (the fraction of recalcitrant to total organic matter; cf. the carbon reactivity index of [Smeaton and Austin, 2022](https://doi.org/10.1029/2021GL097481)) and labile organic matter using a quantile regression forest ([Meinshausen, 2006](https://jmlr.org/papers/volume7/meinshausen06a/meinshausen06a.pdf)) framework. Outputs are aligned with c-squares on which fishing intensity data are reported by ICES; however, the spatial resolution has been increased from 0.05 degrees to 0.01 degrees.
 
-Initially, a raster stack of predictor variables (covariates) is created. These include bathymetry, distance to land, bottom water salinity, bottom water temperature, bottom water current speed (mean and maximum), sea surface chorophyll-a, suspended particulate matter and seabed sediment composition (mud, sand and gravel). Organic carbon content in surface sediments, dry bulk density, the carbon reactivity index and the labile organic matter fraction are then modelled and spatially predicted. The resulting data layers are provided as georeferenced TIFF-files in unprojected format (WGS84) with a resolution of 0.01 degrees.
+Initially, a raster stack of predictor variables (covariates) is created. These include bathymetry, distance to land, bottom water salinity, bottom water temperature, bottom water current speed (mean and maximum), sea surface chorophyll-a, suspended particulate matter and seabed sediment composition (mud, sand and gravel). Organic carbon content in surface sediments, dry bulk density, FRecal and the labile organic matter fraction are then modelled and spatially predicted. The resulting data layers are provided as georeferenced TIFF-files in unprojected format (WGS84) with a resolution of 0.01 degrees.
 
 ### Workflow and outputs
 
@@ -20,7 +22,7 @@ Some models use the output of another model as a predictor, so the order matters
 | `1_predictors` | – | – | – | Builds the predictor stack `data/output/env_vars_0.01deg.tif` (and a Bio-ORACLE variant `env_vars_bio-oracle_0.01deg.tif`). |
 | `2_OC_content_model` | Organic carbon content (`OC`) | weight-% | `all_ll_0.01` | Uses the DBD median from `3_DBD_model` as an additional predictor. |
 | `3_DBD_model` | Dry bulk density (`DBD`) | g/cm³ | `ll_0.01` | Response data from St Andrews and CEFAS merged into one data set. |
-| `4_CRI_model` | Carbon reactivity index (`CRI`) | – | `core_ll_0.01` | Uses the OC median from `2_OC_content_model` as an additional predictor. |
+| `4_CRI_model` | Fraction of recalcitrant to total OM (`FRecal`) | – | `core_ll_0.01` | Uses the OC median from `2_OC_content_model` as an additional predictor. |
 | `5_LabileOM_model` | Labile organic matter (`Labile_OM_pc`) | % | `core_ll_0.01` | Uses the OC median from `2_OC_content_model` as an additional predictor. |
 
 #### Outputs of each model (`2_` to `5_`)

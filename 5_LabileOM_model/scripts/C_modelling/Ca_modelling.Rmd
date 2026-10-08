@@ -304,7 +304,7 @@ for (i in 1:length(sel_preds)) {
 
 Labile organic matter content is predicted. Median values of the QRF distribution are calculated as central values. The 90% prediction interval and the prediction interval ratio are calculated as measures of uncertainty.
 
-```{r predict_oc}
+```{r predict_labileom}
 preds <- raster::stack(predictors[[sel_preds]])
 LabileOM_med <- predict(preds, model$finalModel, what = 0.5)
 LabileOM_p5 <- predict(preds, model$finalModel, what = 0.05)

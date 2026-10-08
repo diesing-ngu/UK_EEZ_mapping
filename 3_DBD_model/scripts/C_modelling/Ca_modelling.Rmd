@@ -303,7 +303,7 @@ for (i in 1:length(sel_preds)) {
 
 The response variable is predicted. Median values of the QRF distribution are calculated as central values. Percentiles are predicted as well.
 
-```{r predict_oc}
+```{r predict_dbd}
 preds <- raster::stack(predictors[[sel_preds]])
 med <- predict(preds, model$finalModel, what = 0.5)
 p5 <- predict(preds, model$finalModel, what = 0.05)

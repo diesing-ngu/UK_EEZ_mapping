@@ -1,5 +1,5 @@
 ---
-title: "Carbon reactivity index - data preparation"
+title: "Fraction of recalcitrant to total OM (FRecal) - data preparation"
 output:
   html_document:
     df_print: paged
@@ -33,7 +33,7 @@ res <- 0.01
 ## Which response variable are we predicting?
 
 ```{r response_type}
-resp_var <- "CRI"
+resp_var <- "FRecal"
 ```
 
 
@@ -80,7 +80,7 @@ fishnet$ID <- 1:nrow(fishnet)
 1. St Andrews data set
 ```{r load_response}
 resp_data_1 <- read.csv(here("4_CRI_model", "data", "input", "OCdata_ukShelf.csv"), header = TRUE, sep = ",")
-resp_data_1 <- resp_data_1[,c(1,4,5,13)] # Adjusted for CRI data
+resp_data_1 <- resp_data_1[,c(1,4,5,13)] # CRI column = recalcitrant/total OM (FRecal)
 summary(resp_data_1)
 
 # Convert to sf
@@ -116,7 +116,7 @@ resp <- rbind(resp_1, resp_2, deparse.level =1)
 
 Check if the response variable has the defined projection. Re-project if this is not the case.
 
-```{r uniform_proj_CRI}
+```{r uniform_proj_resp}
 if (st_crs(resp)$proj4string != crs) {
   resp <- st_transform(resp, crs)
 }
@@ -128,13 +128,13 @@ if (st_crs(resp)$proj4string != crs) {
 Centroids are calculated to average all measurements within one grid cell.
 
 ```{r centroids_surface, warning=FALSE}
-CRI_centroids <- st_join(fishnet, resp)
-CRI_centroids <- na.omit(CRI_centroids)
-CRI_centroids <- CRI_centroids %>% group_by(ID) %>% summarize(CRIndex = mean(CRI, na.rm = TRUE))
-resp <- st_centroid(CRI_centroids)
+FRecal_centroids <- st_join(fishnet, resp)
+FRecal_centroids <- na.omit(FRecal_centroids)
+FRecal_centroids <- FRecal_centroids %>% group_by(ID) %>% summarize(FRecal = mean(CRI, na.rm = TRUE))
+resp <- st_centroid(FRecal_centroids)
 
 plot(predictors$BATH_EMODnet_none)
-plot(resp["CRIndex"], pch = 20, col = "black", cex = 0.5, add = TRUE)
+plot(resp["FRecal"], pch = 20, col = "black", cex = 0.5, add = TRUE)
 ```
 
 
